@@ -1,4 +1,5 @@
 package planner;
+
 /*
  * Class represents a passenger. It includes their name and 
  * data for their route.
@@ -6,4 +7,10 @@ package planner;
 public class Passenger {
 	String name;
 	Route myRoute;
+	
+	Passenger(String name, Station start, Station end){
+		this.name = name;
+		//myRoute = bestpath
+	}
+	
 }

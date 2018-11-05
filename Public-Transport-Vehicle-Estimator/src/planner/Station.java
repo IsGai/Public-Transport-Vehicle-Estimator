@@ -1,30 +1,52 @@
 package planner;
 
 import java.awt.Point;
-import java.util.ArrayList;
+
+import collections.ArrayQueue;
 
 public class Station {
 	
 	String name;
 	
-	Point vertex;
+	int stationId;
 	
-	ArrayList<Edge> listOfEdges = new ArrayList<Edge>();
+	Point vertexCoordinate;
 	
-	//que of passengers
 	
-	public void addPassenger(){
-		//todo
+	ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
+	
+	Station(String name, Point vertexCoordinate){
+		this.name = name;
+		this.vertexCoordinate = vertexCoordinate;
 		return;
 	}
 	
-	public void traversePassengers(){
-		//todo
+
+
+	public void addPassenger(Passenger toAdd){
+		stationOccupance.add(toAdd);
 		return;
 	}
 	
-	public void addEdge(){
-		//todo
-		return;
+	public Passenger removePassenger(Passenger toRemove){
+		return stationOccupance.remove();
+	}
+	
+
+	
+	public int getStationId() {
+		return stationId;
+	}
+
+	public void setStationId(int stationId) {
+		this.stationId = stationId;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public Point getVertexCoordinate() {
+		return vertexCoordinate;
 	}
 }
