@@ -15,7 +15,7 @@ public class Station {
 	
 	ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
 	
-	Station(String name, Point vertexCoordinate){
+	public Station(String name, Point vertexCoordinate){
 		this.name = name;
 		this.vertexCoordinate = vertexCoordinate;
 		return;

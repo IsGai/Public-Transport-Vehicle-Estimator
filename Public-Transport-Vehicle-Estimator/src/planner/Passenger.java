@@ -5,12 +5,18 @@ package planner;
  * data for their route.
  */
 public class Passenger {
-	String name;
-	Route myRoute;
+	private String name;
+	private Route myRoute;
 	
 	Passenger(String name, Station start, Station end){
 		this.name = name;
 		//myRoute = bestpath
 	}
 	
+	public String getName() {
+		return this.name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 }
