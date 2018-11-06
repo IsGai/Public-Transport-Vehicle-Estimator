@@ -1,0 +1,7 @@
+Login defaults:
+Passenger:
+	id: 1000
+	name: Ug Lee
+Admin:
+	username: username
+	password: password
