@@ -137,9 +137,10 @@ public class GraphOfStations {
 		}
 
 		Route bestRoute = new Route();
-		for (int i = end; i == start; i = previousStation.get(i)) {
+		for (int i = end; i != start; i = previousStation.get(i)) {
 			bestRoute.pushStation(stationList.get(i));
 		}
+		bestRoute.pushStation(stationList.get(start)); //adds starting station, because loops doesn't
 
 		return bestRoute;
 
