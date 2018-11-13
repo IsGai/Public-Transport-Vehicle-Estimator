@@ -1,4 +1,8 @@
 package Interface;
+
+import collections.GraphOfStations;
+import planner.Station;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -10,6 +14,7 @@ import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class AdminScreen extends JFrame implements ActionListener{
@@ -35,6 +40,8 @@ public class AdminScreen extends JFrame implements ActionListener{
 	//rightPanel
 	private JPanel rightPanel = new JPanel();
 	private Map map = new Map(false);
+	private GraphOfStations gos = new GraphOfStations();
+	
 	public AdminScreen() {
 		this.setTitle("Admin Screen");
 		this.setLayout(new GridLayout(1, 2));
@@ -116,9 +123,15 @@ public class AdminScreen extends JFrame implements ActionListener{
 		}
 		if(buttonClicked == addStationButton) {
 			//JOptionPane enter in station POINTS or ID or Name?
+			String stationX = JOptionPane.showInputDialog("enter in station x");
+			String stationY = JOptionPane.showInputDialog("enter in station y");
+			String stationN = JOptionPane.showInputDialog("enter in station name");
+			Station s = new Station(stationN, new Point(Integer.parseInt(stationX), Integer.parseInt(stationY)));
+			gos.addStation(s);
 		}
 		if(buttonClicked == removeStationButton) {
-			
+			String stationN = JOptionPane.showInputDialog("enter in station name");
+			//gos.removeStation(s); figure it out
 		}
 		if(buttonClicked == addRouteButton) {
 			//Enter in 1st station, and then 2nd station

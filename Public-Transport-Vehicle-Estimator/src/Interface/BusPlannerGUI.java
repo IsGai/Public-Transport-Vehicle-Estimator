@@ -12,6 +12,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -143,7 +144,8 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	}
 
 	public boolean validateUser() {
-		String[] user = readUser("src\\Data\\Passengers.dat");
+		//String[] user = readUser("src\\Data\\Passengers.dat");
+		String[] user = readUser("C:\\Users\\bf2478uh\\Downloads\\Public-Transport-Vehicle-Estimator\\src\\Data\\Passengers.dat");
 		if (!idTextField.getText().equals(user[0])) {
 			return false;
 		}
@@ -154,7 +156,8 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	}
 
 	public boolean validateAdmin() {
-		String[] admin = readAdmin("src\\Data\\Admin.dat");
+		//String[] admin = readAdmin("src\\Data\\Admin.dat");
+		String[] admin = readAdmin("C:\\Users\\bf2478uh\\Downloads\\Public-Transport-Vehicle-Estimator\\src\\Data\\Admin.dat");
 		if (!usernameTextField.getText().equals(admin[0])) {
 			return false;
 		}
@@ -224,6 +227,8 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 			 * run its method to add passenger
 			 * This GUI will only pass the new passengers name, ID should be self generated
 			 */
+			String name = JOptionPane.showInputDialog("Enter in your name.");
+			
 		}
 		if(temp == remUserButton) {
 			/*
