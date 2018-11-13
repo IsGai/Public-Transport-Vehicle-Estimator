@@ -64,4 +64,11 @@ public class Route {
 	public boolean isEmpty() {
 		return route.isEmpty();
 	}
+	
+	public void tostring() { //testing purposes
+		System.out.println("route size:" + route.size());
+		while(route.size()>0) {
+			System.out.println(route.pop().name);
+		}
+	}
 }
