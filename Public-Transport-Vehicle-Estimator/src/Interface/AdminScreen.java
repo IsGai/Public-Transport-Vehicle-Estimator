@@ -39,8 +39,8 @@ public class AdminScreen extends JFrame implements ActionListener{
 	
 	//rightPanel
 	private JPanel rightPanel = new JPanel();
-	private Map map = new Map(false);
 	private GraphOfStations gos = new GraphOfStations();
+	private Map map = new Map(false, gos);
 	
 	public AdminScreen() {
 		this.setTitle("Admin Screen");
@@ -105,11 +105,15 @@ public class AdminScreen extends JFrame implements ActionListener{
 	}
 	public void rightPanel() {
 		rightPanel.setLayout(new GridLayout(1,1));
-		rightPanel.add(new Map(false));
+		rightPanel.add(map);
 	}
 	public void adminScreen() {
 		this.add(leftPanel);
 		this.add(rightPanel);
+	}
+	
+	public String getInput(String message) {
+		return JOptionPane.showInputDialog(message);
 	}
 
 	@Override
@@ -123,18 +127,35 @@ public class AdminScreen extends JFrame implements ActionListener{
 		}
 		if(buttonClicked == addStationButton) {
 			//JOptionPane enter in station POINTS or ID or Name?
-			String stationX = JOptionPane.showInputDialog("enter in station x");
-			String stationY = JOptionPane.showInputDialog("enter in station y");
-			String stationN = JOptionPane.showInputDialog("enter in station name");
+			String stationX = getInput("Enter in station x");
+			String stationY = getInput("Enter in station y");
+			String stationN = getInput("Enter in station name");
+			//add input validation for stationX/stationY
 			Station s = new Station(stationN, new Point(Integer.parseInt(stationX), Integer.parseInt(stationY)));
 			gos.addStation(s);
+			map.updateMap();
 		}
 		if(buttonClicked == removeStationButton) {
-			String stationN = JOptionPane.showInputDialog("enter in station name");
-			//gos.removeStation(s); figure it out
+			String stationName = getInput("Enter in station name");
+			if(gos.hasStationByName(stationName)) {
+				gos.removeStation(gos.getStationByName(stationName));
+				JOptionPane.showMessageDialog(this.getParent(), stationName + " has been removed", "Station Removed", JOptionPane.INFORMATION_MESSAGE);;
+				map.updateMap();
+			}else {
+				JOptionPane.showMessageDialog(this.getParent(), stationName + " not found", "Station Not Found", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 		if(buttonClicked == addRouteButton) {
-			//Enter in 1st station, and then 2nd station
+			String station1 = getInput("Enter in name of station one");
+			String station2 = getInput("Enter in name of station two");
+			if(!gos.hasStationByName(station1))
+				JOptionPane.showMessageDialog(this.getParent(), "Cannot find station: " + station1, "Station Not Found", JOptionPane.ERROR_MESSAGE);
+			if(!gos.hasStationByName(station2))
+				JOptionPane.showMessageDialog(this.getParent(), "Cannot find station: " + station2, "Station Not Found", JOptionPane.ERROR_MESSAGE);
+			if(gos.hasStationByName(station1) && gos.hasStationByName(station2)) {
+				gos.addEdge(gos.getStationByName(station1), gos.getStationByName(station2));;
+				map.updateMap();
+			}
 		}
 		if(buttonClicked == removeRouteButton) {
 			

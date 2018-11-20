@@ -10,7 +10,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import collections.GraphOfStations;
+import planner.Station;
 
 public class Map extends JPanel implements MouseListener {
 	private Line lineTemp;
@@ -19,12 +23,16 @@ public class Map extends JPanel implements MouseListener {
 	private ArrayList<Line> lines = new ArrayList<Line>();
 	private Oval routeStart;
 	private boolean drawingRoute = false;
+	private static int STATION_DIAMETER = 25;
+	private static int ROUTE_START_DIAMETER = 15;
+	private GraphOfStations gos;
 
-	public Map(boolean restricted) {
+	public Map(boolean restricted, GraphOfStations gos) {
 		this.setBackground(Color.white);
 		this.setForeground(null);
+		this.gos = gos;
 
-		if (!restricted)//userScreen won't be able to edit
+		if (!restricted)// userScreen won't be able to edit
 			this.addMouseListener(this);
 	}
 
@@ -59,21 +67,50 @@ public class Map extends JPanel implements MouseListener {
 	}
 
 	public Oval getClickedStation(Point p) {
-		for (Oval o : ovals) {
-			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax()) {
+		for (Oval o : ovals)
+			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax())
 				return o;
-			}
-		}
 		return null;
 	}
 
 	public boolean clickedOnStation(Point p) {
-		for (Oval o : ovals) {
-			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax()) {
+		for (Oval o : ovals)
+			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax())
 				return true;
+		return false;
+	}
+
+	public void updateMap() { // works when using buttons to add stations/routes
+		ArrayList<Point> temp = gos.getStationsCoords();
+		ArrayList<Oval> ovals = new ArrayList<Oval>();
+		for (int x = 0; x < temp.size(); x++) {
+			if (temp.get(x) != null) {
+				ovals.add(x, new Oval(temp.get(x), STATION_DIAMETER, true));
 			}
 		}
-		return false;
+		this.ovals = ovals;// overwrite old ovals list
+
+		//not accurate, do get stationLinked, then find the corresponding oval, and link ovals
+		//instead of trying to link stations
+		ArrayList<Line> lines = new ArrayList<Line>();
+		ArrayList<ArrayList<Station>> stationEdges = gos.getStationEdges();
+		for (int x = 0; x < stationEdges.size(); x++) {
+			if (stationEdges.get(x) != null) {
+				for (int y = 0; y < stationEdges.get(x).size(); y++) {
+					if (stationEdges.get(x).get(y) != null && x != y) {
+						Point startPoint = stationEdges.get(x).get(x).getVertexCoordinate();
+						Point endPoint = stationEdges.get(x).get(y).getVertexCoordinate();
+						Line tempLine = new Line();
+						tempLine.setStart(startPoint); //startPoint don't need update?
+						tempLine.setEndWithUpdate(endPoint); //but endPoint doe?
+						System.out.println(x + ":" + x + "]" + stationEdges.get(x).get(x).getVertexCoordinate());
+						System.out.println(x + ":" + y + "]" + stationEdges.get(x).get(y).getVertexCoordinate());
+						lines.add(x, tempLine);
+					}
+				}
+			}
+		}
+		this.lines = lines; // overwrite old lines list
 	}
 
 	/*
@@ -91,12 +128,16 @@ public class Map extends JPanel implements MouseListener {
 		g.drawImage(dbImage, 0, 0, this);
 	}
 
+	// Listeners
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			ovals.add(new Oval(e.getX() - 25 / 2, e.getY() - 25 / 2, 25));
-			// System.out.println((e.getX() - 25 / 2) + ", " + (e.getY() - 25 / 2));
-			// System.out.println(ovals.get(0).getXMin() + ": " + ovals.get(0).getXMax());
+			Oval tempOval = new Oval(e.getX(), e.getY(), STATION_DIAMETER);
+			ovals.add(tempOval);
+			String stationName = JOptionPane.showInputDialog("Enter in station name");
+			gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
+			//System.out.println(stationName + ": " + tempOval.getPoint());
+			//System.out.println(new Point(e.getX(), e.getY()));
 		}
 	}
 
@@ -104,7 +145,7 @@ public class Map extends JPanel implements MouseListener {
 	public void mousePressed(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			drawingRoute = true;
-			routeStart = new Oval(e.getX() - 15 / 2, e.getY() - 15 / 2, 15);
+			routeStart = new Oval(e.getX(), e.getY(), 15);
 			if (clickedOnStation(e.getPoint())) {
 				ovalTemp = getClickedStation(e.getPoint());
 				lineTemp = new Line();
@@ -119,16 +160,29 @@ public class Map extends JPanel implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			drawingRoute = false;
-			// routeEnd = new Oval(e.getX() - 25 / 2, e.getY() - 25 / 2, 25);
-			if (clickedOnStation(e.getPoint()) && !sameStation(getClickedStation(e.getPoint()))) {
+			Oval startOval = ovalTemp;
+			Oval endOval = getClickedStation(e.getPoint());
+			if (clickedOnStation(e.getPoint()) && !sameStation(endOval)) {
 				if (lineTemp != null) {
 					lineTemp.setEnd(e.getPoint());
-					lines.add(lineTemp);//
+					lines.add(lineTemp);
+
+					Station startStation = null, endStation = null;
+					if (gos.hasStationByPoint(startOval.getPoint())) {
+						startStation = gos.getStationByPoint(startOval.getPoint());
+						// System.out.println("hasStation: " + startStation.getName());
+					}
+					if (gos.hasStationByPoint(endOval.getPoint())) {
+						endStation = gos.getStationByPoint(endOval.getPoint());
+						// System.out.println("hasStation: " + endStation.getName());
+					}
+					gos.addEdge(startStation, endStation);
+					// System.out.println(gos.getWeight(startStation, endStation));
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public void mouseEntered(MouseEvent e) {
 	}
@@ -137,19 +191,28 @@ public class Map extends JPanel implements MouseListener {
 	public void mouseExited(MouseEvent e) {
 	}
 
+	// Visual Graphic Classes, oval = stations, line = edges/routes
 	private class Oval { // stations
 		private int x, y;
 		private int d;
 
+		// constructor with "mouse point" centering
 		public Oval(Point location, int d) {
+			this.x = location.x - d / 2;
+			this.y = location.y - d / 2;
+			this.d = d;
+		}
+
+		// constructor without -d/2, used in updateMap
+		public Oval(Point location, int d, boolean blank) {
 			this.x = location.x;
 			this.y = location.y;
 			this.d = d;
 		}
 
 		public Oval(int x, int y, int d) {
-			this.x = x;
-			this.y = y;
+			this.x = x - d / 2;
+			this.y = y - d / 2;
 			this.d = d;
 		}
 
@@ -212,7 +275,19 @@ public class Map extends JPanel implements MouseListener {
 			this.start = start;
 		}
 
+		public void setStartWithUpdate(Point start) {
+			start.x += STATION_DIAMETER/2;
+			start.y += STATION_DIAMETER/2;
+			this.start = start;
+		}
+
 		public void setEnd(Point end) {
+			this.end = end;
+		}
+
+		public void setEndWithUpdate(Point end) {
+			end.x += STATION_DIAMETER/2;
+			end.y += STATION_DIAMETER/2;
 			this.end = end;
 		}
 	}

@@ -119,7 +119,7 @@ public class UserScreen extends JFrame implements ActionListener {
 	public void rightPanel() {
 		//Map map = getMapData();
 		rightPanel.setLayout(new BorderLayout());
-		rightPanel.add(new Map(true));
+		rightPanel.add(new Map(true, null)); //new Map(true, GraphOfStations) should be read from a textfile?
 	}
 
 	public void userScreen() {

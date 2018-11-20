@@ -68,7 +68,7 @@ public class Route {
 	public void tostring() { //testing purposes
 		System.out.println("route size:" + route.size());
 		while(route.size()>0) {
-			System.out.println(route.pop().name);
+			//System.out.println(route.pop().name);
 		}
 	}
 }

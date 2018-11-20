@@ -6,14 +6,14 @@ import collections.ArrayQueue;
 
 public class Station {
 	
-	String name;
+	private String name;
 	
-	int stationId;
+	private int stationId; //station uid, generated in GraphOfStations
 	
-	Point vertexCoordinate;
+	private Point vertexCoordinate; //station coordinates
 	
 	
-	ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
+	private ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
 	
 	public Station(String name, Point vertexCoordinate){
 		this.name = name;

@@ -3,6 +3,7 @@ package collections;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
@@ -11,10 +12,13 @@ import planner.Route;
 import planner.Station;
 
 public class GraphOfStations {
-	ArrayList<ArrayList<Double>> adjacencyList = new ArrayList<ArrayList<Double>>();
-	ArrayList<Station> stationList = new ArrayList<Station>();
-	int stationCount = 0;
+	private ArrayList<ArrayList<Double>> adjacencyList = new ArrayList<ArrayList<Double>>();
+	private ArrayList<Station> stationList = new ArrayList<Station>();
+	private int stationCount = 0;
 
+	//stationEdges holds references to which stations are connect to which station
+	//<Station> replicate of adjacencyList
+	private ArrayList<ArrayList<Station>> stationEdges = new ArrayList<ArrayList<Station>>();
 	/*
 	 * Description: Adds a station to the graph
 	 * 
@@ -28,10 +32,13 @@ public class GraphOfStations {
 		// Loop to add column to other stations.
 		//System.out.println(stationCount);
 		adjacencyList.add(new ArrayList<Double>());
+		stationEdges.add(new ArrayList<Station>());
 		for (int i = 0; i <= stationCount; i++) {
 			// adds 0.0 to every station, for when every new station is created
-			for(int j=adjacencyList.get(i).size();j<=stationCount;j++)
+			for(int j=adjacencyList.get(i).size();j<=stationCount;j++) {
 				adjacencyList.get(i).add(0.0);
+				stationEdges.get(i).add(null);
+			}
 		}
 
 		// Increment station count.
@@ -71,7 +78,13 @@ public class GraphOfStations {
 		
 		adjacencyList.get(id1).set(id2, weight);
 		adjacencyList.get(id2).set(id1, weight);
-
+		
+		//refer to itself
+		stationEdges.get(id1).set(id1, vertexOne);
+		stationEdges.get(id2).set(id2, vertexTwo);
+		//connect it to other station
+		stationEdges.get(id1).set(id2, vertexTwo);
+		stationEdges.get(id2).set(id1, vertexOne);
 	}
 
 	/*
@@ -144,6 +157,49 @@ public class GraphOfStations {
 
 		return bestRoute;
 
+	}
+
+	//William's defined methods
+	public boolean hasStationByName(String stationName) {
+		for(Station s: stationList) 
+			if(s!=null) 
+				if(s.getName().equalsIgnoreCase(stationName))
+					return true;
+		return false;
+	}
+	public Station getStationByName(String stationName) {
+		for(Station s: stationList) 
+			if(s!=null) 
+				if(s.getName().equalsIgnoreCase(stationName))
+					return s;
+		return null;
+	}
+	public void removeStation(Station station) {
+		stationList.remove(station); //might have issues with how stationID is implemented, and used
+	}
+	public ArrayList<Point> getStationsCoords(){
+		ArrayList<Point> temp = new ArrayList<Point>();
+		for(Station s: stationList)
+			if(s!=null)
+				temp.add(s.getVertexCoordinate());
+		return temp;
+	}	
+	public ArrayList<ArrayList<Station>> getStationEdges(){
+		return this.stationEdges;
+	}
+	public boolean hasStationByPoint(Point point) {
+		for(Station s: stationList)
+			if(s!=null)
+				if(s.getVertexCoordinate().equals(point))
+					return true;
+		return false;
+	}
+	public Station getStationByPoint(Point point) {
+		for(Station s: stationList)
+			if(s!=null)
+				if(s.getVertexCoordinate().equals(point))
+					return s;
+		return null;
 	}
 
 }
