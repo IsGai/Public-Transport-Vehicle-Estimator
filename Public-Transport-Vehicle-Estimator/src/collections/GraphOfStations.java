@@ -4,21 +4,56 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 import java.awt.Point;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 
+import planner.Passenger;
 import planner.Route;
 import planner.Station;
 
-public class GraphOfStations {
-	private ArrayList<ArrayList<Double>> adjacencyList = new ArrayList<ArrayList<Double>>();
-	private ArrayList<Station> stationList = new ArrayList<Station>();
+public class GraphOfStations implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
+	private AdjacencyList<ArrayList<Double>> adjacencyList = new AdjacencyList<ArrayList<Double>>();
+	//doing this to quickly implement serializable
+	private class AdjacencyList<T> extends ArrayList<T> implements Serializable{
+		private static final long serialVersionUID = 1L;
+		public AdjacencyList() {
+		}
+		public AdjacencyList(int s) {
+			super(s);
+		}
+	}
+	private StationList<Station> stationList = new StationList<Station>();
+	//doing this to quickly implement serializable
+	private class StationList<T> extends ArrayList<T> implements Serializable{
+		private static final long serialVersionUID = 1L;
+	}
 	private int stationCount = 0;
 
-	//stationEdges holds references to which stations are connect to which station
-	//<Station> replicate of adjacencyList
-	private ArrayList<ArrayList<Station>> stationEdges = new ArrayList<ArrayList<Station>>();
+	//used to store which stations are connected to which stations
+	// "asdflmfao" is used to seperate the two stationNames
+	private StationEdges<String> stationEdges = new StationEdges<String>();
+	//doing this to quickly implement serializable
+	private class StationEdges<T> extends ArrayList<T> implements Serializable{
+		private static final long serialVersionUID = 1L;
+	}
+	private ArrayList<Passenger> passengers;//imported from BusPlannerGUI()
+	
+	public GraphOfStations() {
+		//for testing purposes in Driver.java
+		this.passengers = new ArrayList<Passenger>();
+	}
+	public GraphOfStations(Passengers<Passenger> passengers) {
+		this.passengers = passengers;
+	}
 	/*
 	 * Description: Adds a station to the graph
 	 * 
@@ -31,18 +66,22 @@ public class GraphOfStations {
 	public void addStation(Station stationToAdd) {
 		// Loop to add column to other stations.
 		//System.out.println(stationCount);
-		adjacencyList.add(new ArrayList<Double>());
-		stationEdges.add(new ArrayList<Station>());
+		/*
 		for (int i = 0; i <= stationCount; i++) {
 			// adds 0.0 to every station, for when every new station is created
 			for(int j=adjacencyList.get(i).size();j<=stationCount;j++) {
 				adjacencyList.get(i).add(0.0);
 				stationEdges.get(i).add(null);
 			}
-		}
+		}*/
 
 		// Increment station count.
 		stationCount++;
+		adjacencyList.add(new AdjacencyList<Double>(stationCount));
+	
+		for(int x=0;x<stationCount;x++)
+			for(int y=adjacencyList.get(x).size();y<stationCount;y++) 
+				adjacencyList.get(x).add(0.0);
 
 		// Create row for new station.
 		ArrayList<Double> newStationList = new ArrayList<Double>(stationCount);
@@ -55,6 +94,7 @@ public class GraphOfStations {
 
 		// Add station to station list.
 		stationList.add(stationToAdd);
+		//System.out.println("addStation(): " + stationToAdd.getVertexCoordinate());
 	}
 
 	/*
@@ -71,20 +111,11 @@ public class GraphOfStations {
 		double weight = getWeight(vertexOne, vertexTwo);
 		int id1 = vertexOne.getStationId();
 		int id2 = vertexTwo.getStationId();
-		/*debugging
-		System.out.println(id1 + ", " + id2 + ": " + weight);
-		System.out.println(adjacencyList.get(0).size());
-		System.out.println(adjacencyList.get(1).size());*/
 		
 		adjacencyList.get(id1).set(id2, weight);
 		adjacencyList.get(id2).set(id1, weight);
 		
-		//refer to itself
-		stationEdges.get(id1).set(id1, vertexOne);
-		stationEdges.get(id2).set(id2, vertexTwo);
-		//connect it to other station
-		stationEdges.get(id1).set(id2, vertexTwo);
-		stationEdges.get(id2).set(id1, vertexOne);
+		stationEdges.add(vertexOne.getName() + "asdflmfao" + vertexTwo.getName());
 	}
 
 	/*
@@ -174,17 +205,13 @@ public class GraphOfStations {
 					return s;
 		return null;
 	}
-	public void removeStation(Station station) {
-		stationList.remove(station); //might have issues with how stationID is implemented, and used
+	public void removeStation(Station station) { //not yet implemented
+		stationList.remove(station); //might have issues with how stationID is implemented and used
 	}
-	public ArrayList<Point> getStationsCoords(){
-		ArrayList<Point> temp = new ArrayList<Point>();
-		for(Station s: stationList)
-			if(s!=null)
-				temp.add(s.getVertexCoordinate());
-		return temp;
-	}	
-	public ArrayList<ArrayList<Station>> getStationEdges(){
+	public ArrayList<Station> getStationList(){
+		return this.stationList;
+	}
+	public ArrayList<String> getStationEdges(){
 		return this.stationEdges;
 	}
 	public boolean hasStationByPoint(Point point) {
@@ -201,5 +228,56 @@ public class GraphOfStations {
 					return s;
 		return null;
 	}
+	/*
+	 * @predcondition - id = an integer
+	 */
+	public boolean removePassenger(int id, String name) {
+		for(Passenger p: passengers)
+			if(p!=null)
+				if(p.getName().equalsIgnoreCase(name) && p.getId()==id) {
+					passengers.remove(p);
+					return true;
+				}
+		return false;		
+	}
 
+	public void saveGos(String fileName) {
+		try {
+			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("src/Data/"+fileName + ".map"));
+			outputStream.writeObject(adjacencyList);
+			outputStream.writeObject(stationList);
+			outputStream.writeObject(stationCount);
+			outputStream.writeObject(stationEdges);
+			outputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public boolean loadGOS(String filePath) {// has to be changed according to data structures
+		boolean loaded = false;
+		try {
+			ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath));
+			try {
+				this.adjacencyList = (AdjacencyList<ArrayList<Double>>) inputStream.readObject();
+				this.stationList = (StationList<Station>) inputStream.readObject();
+				this.stationCount = (int) inputStream.readObject();
+				this.stationEdges = (StationEdges<String>) inputStream.readObject();
+				inputStream.close();
+				loaded =  true;
+			} catch (Exception e) {
+				loaded = false;
+			}
+			inputStream.close();
+		} catch (IOException e) {
+			loaded = false;
+		}
+		return loaded;
+	}
+	public void clearGOS() {
+		this.adjacencyList = new AdjacencyList<ArrayList<Double>>();
+		this.stationList = new StationList<Station>();
+		this.stationCount = 0;
+		this.stationEdges = new StationEdges<String>();
+		this.passengers = new Passengers<Passenger>();
+	}
 }

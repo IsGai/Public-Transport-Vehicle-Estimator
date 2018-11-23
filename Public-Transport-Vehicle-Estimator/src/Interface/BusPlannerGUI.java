@@ -1,4 +1,5 @@
 package Interface;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -7,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -15,6 +17,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import collections.GraphOfStations;
+import collections.Passengers;
+import planner.Passenger;
 
 public class BusPlannerGUI extends JFrame implements ActionListener {
 	public static void main(String[] args) {
@@ -53,8 +59,10 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	private JButton remUserButton = new JButton("Remove User");
 
 	// other variables
-	//Passengers[] passengers; //reserved: program automatically loads from Passengers.dat
-	//Route[] routes; //reserved: program automaticall loads from Routes.dat
+	// reserved: program automatically loads from Passengers.dat
+	private Passengers<Passenger> passengers = new Passengers<Passenger>();
+	private GraphOfStations gos = new GraphOfStations(passengers);
+	// Route[] routes; //reserved: program automaticall loads from Routes.dat
 
 	public BusPlannerGUI() {
 		this.setTitle("Bus Planner");
@@ -100,20 +108,17 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		passwordPanel.add(passwordTextField);
 		panelSetup(adminPanel, usernamePanel, passwordPanel);
 	}
-	
+
 	public void panelSetup(JPanel panel, JPanel panel1, JPanel panel2) {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(panel1);
 		panel.add(panel2);
 	}
-	
+
 	public void loginPanelSetup() {
 		loginPanel.add(loginButton);
 		loginPanel.add(addUserButton);
 		loginPanel.add(remUserButton);
-		//default values
-		//addUserButton.setVisible(false);
-		//remUserButton.setVisible(false);
 	}
 
 	public void GUIComponents() {
@@ -143,21 +148,8 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		this.validate();
 	}
 
-	public boolean validateUser() {
-		//String[] user = readUser("src\\Data\\Passengers.dat");
-		String[] user = readUser("C:\\Users\\bf2478uh\\Downloads\\Public-Transport-Vehicle-Estimator\\src\\Data\\Passengers.dat");
-		if (!idTextField.getText().equals(user[0])) {
-			return false;
-		}
-		if (!nameTextField.getText().equalsIgnoreCase(user[1])) { //case insensitive
-			return false;
-		}
-		return true;
-	}
-
 	public boolean validateAdmin() {
-		//String[] admin = readAdmin("src\\Data\\Admin.dat");
-		String[] admin = readAdmin("C:\\Users\\bf2478uh\\Downloads\\Public-Transport-Vehicle-Estimator\\src\\Data\\Admin.dat");
+		String[] admin = readAdmin("src/Data/Admin.dat");
 		if (!usernameTextField.getText().equals(admin[0])) {
 			return false;
 		}
@@ -167,25 +159,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		return true;
 	}
 
-	public String[] readUser(String filePath) {//has to be changed according to data structures
-		String id = "";
-		String name = "";
-		try {
-			ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath));
-			try {
-				id = inputStream.readUTF(); // = "1000"
-				name = inputStream.readUTF(); // = "Ug Lee"
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			inputStream.close();
-		} catch (IOException e) {
-
-		}
-		return new String[] { id, name };
-	}
-
-	public String[] readAdmin(String filePath) {//has to be changed according to data structures
+	public String[] readAdmin(String filePath) {// has to be changed according to data structures
 		String username = "";
 		String password = "";
 		try {
@@ -202,6 +176,10 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 		}
 		return new String[] { username, password };
+	}
+
+	public void outputMessage(String message, String title, int messageType) {
+		JOptionPane.showMessageDialog(this, message, title, messageType);
 	}
 
 	@Override
@@ -221,33 +199,56 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 			remUserButton.setVisible(false);
 			changeScreenTo(adminPanel);
 		}
-		if(temp == addUserButton) {
-			/*
-			 * Whatever class holds the main Passengers data
-			 * run its method to add passenger
-			 * This GUI will only pass the new passengers name, ID should be self generated
-			 */
+		if (temp == addUserButton) {
 			String name = JOptionPane.showInputDialog("Enter in your name.");
-			
+			Passenger p = new Passenger(name);
+			passengers.add(p);
+			outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
+					+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
+			passengers.exportPassengers("src/Data/Passengers.dat");
 		}
-		if(temp == remUserButton) {
-			/*
-			 * Whatever class holds the main Passengers data
-			 * run its method to remove passenger
-			 * search through Passengers.dat to find matching ID and name for passenger
-			 * if found, then remove that passenger and save Passengers.dat
-			 */
+		if (temp == remUserButton) {
+			String id = JOptionPane.showInputDialog("Verify ID.");
+			String name = JOptionPane.showInputDialog("Verify name.");
+			try {
+				boolean removed = passengers.removePassenger(Integer.parseInt(id), name);
+				if (removed)
+					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
+							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
+				else
+					outputMessage("Passenger[ID:" + id + ", Name:" + name
+							+ "] could not be found.\nPlease make sure you've entered in the correct information.",
+							"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
+			} catch (NumberFormatException e2) {
+				outputMessage("Please enter in a number. ie: \"1000\".", "Invalid ID Format",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 		if (temp == loginButton) {
-			if (!userButton.isEnabled() && validateUser()) {
-				//find passenger, pass Passenger to UserScreen()
-				//load routes and stations to map(), set map to editable(false)
-				new UserScreen(idTextField.getText(), nameTextField.getText());
-				this.dispose();
+			if (!userButton.isEnabled()) {
+				// find passenger, pass Passenger to UserScreen()
+				// load routes and stations to map(), set map to editable(false)
+				int id = 0;
+				String name = nameTextField.getText();
+				try {
+					id = Integer.parseInt(idTextField.getText());
+					Passenger currentPassenger = passengers.getPassenger(id, name);
+					if (currentPassenger != null) {
+						new UserScreen(id, name, gos);
+						this.dispose();
+					} else {
+						outputMessage(
+								"Could not find passenger with information.\nPassenger[ID:" + id + ", Name:" + name + "]",
+								"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
+					}
+				} catch (NumberFormatException nfe) {
+					outputMessage("Make sure ID textfield is only numbers.\nie: \"1000\".", "Invalid ID Format",
+							JOptionPane.ERROR_MESSAGE);
+				}
 			}
 			if (!adminButton.isEnabled() && validateAdmin()) {
-				//load routes and stations to map(), set map to editable(true)
-				new AdminScreen();
+				// load routes and stations to map(), set map to editable(true)
+				new AdminScreen(gos);
 				this.dispose();
 			}
 		}

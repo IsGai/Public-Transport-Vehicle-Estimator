@@ -2,6 +2,8 @@ package Interface;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -31,6 +33,7 @@ public class Map extends JPanel implements MouseListener {
 		this.setBackground(Color.white);
 		this.setForeground(null);
 		this.gos = gos;
+		this.setPreferredSize(new Dimension(1000,1000));
 
 		if (!restricted)// userScreen won't be able to edit
 			this.addMouseListener(this);
@@ -42,20 +45,26 @@ public class Map extends JPanel implements MouseListener {
 		Graphics2D g = (Graphics2D) g2;
 
 		g.setColor(Color.black);
-		for (Oval o : ovals) {// constantly draws stations
-			g.fillOval(o.getX(), o.getY(), o.getD(), o.getD());
-		}
-		for (Line l : lines) {// constantly draw routes
-			g.setStroke(new BasicStroke(5));
-			g.drawLine(l.getStart().x, l.getStart().y, l.getEnd().x, l.getEnd().y);
-		}
+		for (Oval o : ovals) // constantly draws stations
+			if (o != null)
+				g.fillOval(o.getX(), o.getY(), o.getD(), o.getD());
+		for (Line l : lines) // constantly draw routes
+			if (l != null) {
+				g.setStroke(new BasicStroke(5));
+				g.drawLine(l.getStart().x, l.getStart().y, l.getEnd().x, l.getEnd().y);
+			}
+		for (Oval o : ovals) // constantly draws ovalNames
+			if (o != null) {
+				g.setColor(Color.blue);
+				g.setFont(new Font("Arial", Font.BOLD, 15));
+				g.drawString(o.getName(), o.getX(), o.getY());
+				g.setColor(Color.black);
+			}
 		if (drawingRoute) {// draws red circle
 			g.setColor(Color.red);
 			g.fillOval(routeStart.getX(), routeStart.getY(), routeStart.getD(), routeStart.getD());
-		} else {
+		} else
 			g.setColor(Color.black);
-		}
-
 		repaint();
 	}
 
@@ -80,37 +89,24 @@ public class Map extends JPanel implements MouseListener {
 		return false;
 	}
 
-	public void updateMap() { // works when using buttons to add stations/routes
-		ArrayList<Point> temp = gos.getStationsCoords();
-		ArrayList<Oval> ovals = new ArrayList<Oval>();
-		for (int x = 0; x < temp.size(); x++) {
-			if (temp.get(x) != null) {
-				ovals.add(x, new Oval(temp.get(x), STATION_DIAMETER, true));
-			}
-		}
-		this.ovals = ovals;// overwrite old ovals list
-
-		//not accurate, do get stationLinked, then find the corresponding oval, and link ovals
-		//instead of trying to link stations
-		ArrayList<Line> lines = new ArrayList<Line>();
-		ArrayList<ArrayList<Station>> stationEdges = gos.getStationEdges();
-		for (int x = 0; x < stationEdges.size(); x++) {
-			if (stationEdges.get(x) != null) {
-				for (int y = 0; y < stationEdges.get(x).size(); y++) {
-					if (stationEdges.get(x).get(y) != null && x != y) {
-						Point startPoint = stationEdges.get(x).get(x).getVertexCoordinate();
-						Point endPoint = stationEdges.get(x).get(y).getVertexCoordinate();
-						Line tempLine = new Line();
-						tempLine.setStart(startPoint); //startPoint don't need update?
-						tempLine.setEndWithUpdate(endPoint); //but endPoint doe?
-						System.out.println(x + ":" + x + "]" + stationEdges.get(x).get(x).getVertexCoordinate());
-						System.out.println(x + ":" + y + "]" + stationEdges.get(x).get(y).getVertexCoordinate());
-						lines.add(x, tempLine);
-					}
-				}
-			}
-		}
-		this.lines = lines; // overwrite old lines list
+	public void updateMap() {
+		
+		// add new stations to ovals
+		ArrayList<Station> stationList = gos.getStationList();
+		ArrayList<Oval> newOvals = new ArrayList<Oval>();
+		for (int x = 0; x < stationList.size(); x++)
+			if (stationList.get(x) != null)
+				newOvals.add(new Oval(stationList.get(x).getVertexCoordinate(), STATION_DIAMETER,
+						stationList.get(x).getName(), true));
+		ovals = newOvals;
+		
+		// add new edges to lines
+		ArrayList<String> stationEdges = gos.getStationEdges();
+		ArrayList<Line> newLines = new ArrayList<Line>();// newLines is used to get rid of duplicated drawn lines
+		for (int x = 0; x < stationEdges.size(); x++)
+			newLines.add(new Line(gos.getStationByName(stationEdges.get(x).split("asdflmfao")[0]).getVertexCoordinate(),
+					gos.getStationByName(stationEdges.get(x).split("asdflmfao")[1]).getVertexCoordinate()));
+		this.lines = newLines;
 	}
 
 	/*
@@ -132,25 +128,29 @@ public class Map extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			Oval tempOval = new Oval(e.getX(), e.getY(), STATION_DIAMETER);
+			Oval tempOval = new Oval(new Point(e.getX(), e.getY()), STATION_DIAMETER, true);
 			ovals.add(tempOval);
 			String stationName = JOptionPane.showInputDialog("Enter in station name");
+			tempOval.setName(stationName);
 			gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
-			//System.out.println(stationName + ": " + tempOval.getPoint());
-			//System.out.println(new Point(e.getX(), e.getY()));
 		}
 	}
 
+	/*
+	 * if clicking on a station then lineTemp is not null else it is null
+	 * 
+	 */
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			drawingRoute = true;
-			routeStart = new Oval(e.getX(), e.getY(), 15);
-			if (clickedOnStation(e.getPoint())) {
+			drawingRoute = true; // used to draw the red Circle
+			routeStart = new Oval(e.getX(), e.getY(), ROUTE_START_DIAMETER); // the red circle
+			if (clickedOnStation(e.getPoint())) { // if clicked on a already present station
 				ovalTemp = getClickedStation(e.getPoint());
 				lineTemp = new Line();
 				lineTemp.setStart(e.getPoint());
 			} else {
+				ovalTemp = null;
 				lineTemp = null;
 			}
 		}
@@ -159,25 +159,28 @@ public class Map extends JPanel implements MouseListener {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			drawingRoute = false;
-			Oval startOval = ovalTemp;
-			Oval endOval = getClickedStation(e.getPoint());
-			if (clickedOnStation(e.getPoint()) && !sameStation(endOval)) {
-				if (lineTemp != null) {
-					lineTemp.setEnd(e.getPoint());
-					lines.add(lineTemp);
+			drawingRoute = false; // stops drawing the red circle
+			Oval startOval = ovalTemp; // either an Oval or null
+			if (clickedOnStation(e.getPoint())) { // clciked on oval
+				Oval endOval = getClickedStation(e.getPoint());// get which oval was clicked on
+				if (!sameStation(endOval)) { // make sure the user actually drew a route
+					if (lineTemp != null) { // if lineTemp==null then the first click was not on a station
 
-					Station startStation = null, endStation = null;
-					if (gos.hasStationByPoint(startOval.getPoint())) {
-						startStation = gos.getStationByPoint(startOval.getPoint());
-						// System.out.println("hasStation: " + startStation.getName());
+						Station startStation = null, endStation = null;
+						// double checks GraphOfStation, to make sure a Station with the same points as
+						// the oval exists in the stationList. note: stations should exist
+						if (gos.hasStationByPoint(startOval.getPoint())) {
+							startStation = gos.getStationByPoint(startOval.getPoint());
+						}
+						if (gos.hasStationByPoint(endOval.getPoint())) {
+							endStation = gos.getStationByPoint(endOval.getPoint());
+						}
+						if (startStation != null && endStation != null) {
+							gos.addEdge(startStation, endStation);
+							lineTemp.setEnd(e.getPoint());
+							lines.add(lineTemp);
+						}
 					}
-					if (gos.hasStationByPoint(endOval.getPoint())) {
-						endStation = gos.getStationByPoint(endOval.getPoint());
-						// System.out.println("hasStation: " + endStation.getName());
-					}
-					gos.addEdge(startStation, endStation);
-					// System.out.println(gos.getWeight(startStation, endStation));
 				}
 			}
 		}
@@ -195,25 +198,35 @@ public class Map extends JPanel implements MouseListener {
 	private class Oval { // stations
 		private int x, y;
 		private int d;
-
-		// constructor with "mouse point" centering
-		public Oval(Point location, int d) {
-			this.x = location.x - d / 2;
-			this.y = location.y - d / 2;
-			this.d = d;
-		}
+		private String name;
 
 		// constructor without -d/2, used in updateMap
 		public Oval(Point location, int d, boolean blank) {
 			this.x = location.x;
 			this.y = location.y;
 			this.d = d;
+			this.name = "";
+		}
+
+		public Oval(Point location, int d, String name, boolean blank) {
+			this.x = location.x;
+			this.y = location.y;
+			this.d = d;
+			this.name = name;
 		}
 
 		public Oval(int x, int y, int d) {
 			this.x = x - d / 2;
 			this.y = y - d / 2;
 			this.d = d;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
 		}
 
 		public Point getPoint() {
@@ -259,8 +272,8 @@ public class Map extends JPanel implements MouseListener {
 		}
 
 		public Line(Point start, Point end) {
-			this.start = start;
-			this.end = end;
+			setStartWithUpdate(start);
+			setEndWithUpdate(end);
 		}
 
 		public Point getStart() {
@@ -275,10 +288,13 @@ public class Map extends JPanel implements MouseListener {
 			this.start = start;
 		}
 
+		// fixed: routes shifting to bottom right
+		// was referencing Station.coordinates
 		public void setStartWithUpdate(Point start) {
-			start.x += STATION_DIAMETER/2;
-			start.y += STATION_DIAMETER/2;
-			this.start = start;
+			Point newStart = new Point(start);
+			newStart.x += STATION_DIAMETER / 2;
+			newStart.y += STATION_DIAMETER / 2;
+			this.start = newStart;
 		}
 
 		public void setEnd(Point end) {
@@ -286,9 +302,10 @@ public class Map extends JPanel implements MouseListener {
 		}
 
 		public void setEndWithUpdate(Point end) {
-			end.x += STATION_DIAMETER/2;
-			end.y += STATION_DIAMETER/2;
-			this.end = end;
+			Point newEnd = new Point(end);
+			newEnd.x += STATION_DIAMETER / 2;
+			newEnd.y += STATION_DIAMETER / 2;
+			this.end = newEnd;
 		}
 	}
 }

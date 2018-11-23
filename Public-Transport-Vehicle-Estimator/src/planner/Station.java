@@ -1,11 +1,14 @@
 package planner;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 import collections.ArrayQueue;
 
-public class Station {
+public class Station implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
+
 	private String name;
 	
 	private int stationId; //station uid, generated in GraphOfStations

@@ -32,7 +32,7 @@ public class Driver {
 		
 		
 		//new UserScreen("1000", "Ug Lee");
-		new AdminScreen();
+		new AdminScreen(new GraphOfStations());
 		//save();
 	}
 	public static void save() { //generate placeholder data files

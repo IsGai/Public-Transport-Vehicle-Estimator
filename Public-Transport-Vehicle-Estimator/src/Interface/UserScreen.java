@@ -18,6 +18,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import collections.GraphOfStations;
+
 public class UserScreen extends JFrame implements ActionListener {
 
 	// GUI related
@@ -42,8 +44,9 @@ public class UserScreen extends JFrame implements ActionListener {
 	private JButton backButton = new JButton("Return to Login Screen");
 
 	private JPanel rightPanel = new JPanel();
+	private GraphOfStations gos;
 	//Map map = new Map(restricted)
-	public UserScreen(String id, String name) {
+	public UserScreen(int id, String name, GraphOfStations gos) {
 		this.setTitle("Passenger Screen");
 		this.setLayout(new GridLayout(1,2));
 
@@ -55,7 +58,7 @@ public class UserScreen extends JFrame implements ActionListener {
 		// this.setLocationRelativeTo(null);
 		this.setLocation(guiLocation.x, guiLocation.y);
 
-		initialSetup(id, name);
+		initialSetup(id, name, gos);
 		leftPanel();
 		rightPanel();
 		userScreen();
@@ -66,11 +69,12 @@ public class UserScreen extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	public void initialSetup(String id, String name) {
-		idTextField.setText(id);
+	public void initialSetup(int id, String name, GraphOfStations gos) {
+		idTextField.setText(id + "");
 		idTextField.setEditable(false);
 		nameTextField.setText(name);
 		nameTextField.setEditable(false);
+		this.gos = gos;
 	}
 
 	public void leftPanel() {
