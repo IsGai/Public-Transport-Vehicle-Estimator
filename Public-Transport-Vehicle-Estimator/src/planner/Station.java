@@ -31,7 +31,7 @@ public class Station implements Serializable{
 		return;
 	}
 	
-	public Passenger removePassenger(Passenger toRemove){
+	public Passenger removePassenger(Passenger toRemove) throws Exception{
 		return stationOccupance.remove();
 	}
 	
