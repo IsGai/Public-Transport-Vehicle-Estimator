@@ -7,6 +7,7 @@ package collections;
 //Complete documentation is available from the ArrayQueue link in:
 //http://www.cs.colorado.edu/~main/docs/
 
+import java.io.Serializable;
 import java.util.NoSuchElementException;
 
 /******************************************************************************
@@ -37,8 +38,9 @@ import java.util.NoSuchElementException;
 *
 * @see LinkedQueue
 ******************************************************************************/
-public class ArrayQueue<E> implements Cloneable
+public class ArrayQueue<E> implements Cloneable, Serializable
 {
+	private static final long serialVersionUID = 1L;
 // Invariant of the ArrayQueue<E> class:
 //   1. The number of items in the queue is in the instance variable manyItems.
 //   2. For a non-empty queue, the items are stored in a circular array

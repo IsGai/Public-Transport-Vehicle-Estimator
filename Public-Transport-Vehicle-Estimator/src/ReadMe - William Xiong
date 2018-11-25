@@ -1,7 +1,33 @@
 Login defaults:
 Passenger:
-	id: 1000
+	id: 1020
 	name: Ug Lee
 Admin:
 	username: username
 	password: password
+	
+11/23/18 3:17 Central Time US
+-Update:
+	-On AdminScreen:
+		-can add routes/stations via clicking on the maps or using the buttons
+		-can save/load map
+		-can clear current map(reset GraphOfStations variables)
+		-cannot add/remove passengers
+		-cannot remove stations/routes
+		-cannot show all passengers
+	-On UserScreen:
+		-can return to LoginScreen
+		-shows user login ID and Name
+		-many features not yet implemented
+	-On LoginScreen:
+		-can add passengers with only the name, ID is generated. ie: 1000, 1010, 1020, etc...
+		-can remove passengers via ID and name
+		-can login with passenger ID and name if passenger exist in Passengers.dat
+	-Passengers.java
+		-automatically loads passenger data from Passengers.dat. Can be configured to load from other
+		files later
+	-GraphOfStations.java
+		-stationEdges is a variable to keep track of which stations are connect to which
+		-all instance variables given an inner class with Serializable implemented, so that
+		GraphOfStations can be saved to an object file
+		-BusPlannerGUI.java loads passenger data and passes it to GraphOfStations.java
