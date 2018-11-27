@@ -45,14 +45,14 @@ public class GraphOfStations implements Serializable{
 	private class StationEdges<T> extends ArrayList<T> implements Serializable{
 		private static final long serialVersionUID = 1L;
 	}
-	private ArrayList<Passenger> passengers;//imported from BusPlannerGUI()
+	private Passengers<Passenger> passengers;//imported from BusPlannerGUI()
+	private String fileName = "Default";
 	
 	public GraphOfStations() {
 		//for testing purposes in Driver.java
-		this.passengers = new ArrayList<Passenger>();
-	}
-	public GraphOfStations(Passengers<Passenger> passengers) {
-		this.passengers = passengers;
+		this.loadGOS("src/Data/" + fileName + ".map");
+		this.passengers = new Passengers<Passenger>(fileName);
+		//this.passengers = new ;
 	}
 	/*
 	 * Description: Adds a station to the graph
@@ -279,5 +279,11 @@ public class GraphOfStations implements Serializable{
 		this.stationCount = 0;
 		this.stationEdges = new StationEdges<String>();
 		this.passengers = new Passengers<Passenger>();
+	}
+	public Passengers<Passenger> getPassengers(){
+		return this.passengers;
+	}
+	public void setPassengers(Passengers<Passenger> passengers) {
+		this.passengers = passengers;
 	}
 }

@@ -52,6 +52,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 	private JPanel rightPanel = new JPanel();
 	private GraphOfStations gos = null;
 	private Map map = null;
+	private String mapFileName = "Default.map";
 
 	public AdminScreen(GraphOfStations gos) {
 		this.setTitle("Admin Screen");
@@ -147,8 +148,12 @@ public class AdminScreen extends JFrame implements ActionListener {
 
 	public void rightPanel() {
 		rightPanel.setLayout(new BorderLayout());
-		addScrollPane(rightPanel, map, "Map (Default: 1000x1000)");
+		addScrollPane(rightPanel, map, "" + mapFileName + "(1000x1000)");
 		// rightPanel.add(scrollp);
+	}
+	
+	public void changeMapTitle(String mapFileName) {
+		addScrollPane(rightPanel, map, "" + mapFileName + "(1000x1000)");
 	}
 
 	public void addScrollPane(JPanel panel, JPanel panel2, String title) {
@@ -180,6 +185,13 @@ public class AdminScreen extends JFrame implements ActionListener {
 
 	public void outputMessage(String message, String title, int messageType) {
 		JOptionPane.showMessageDialog(this, message, title, messageType);
+	}
+	
+	public void changeMapFileName(String mapFileName) {
+		this.mapFileName = mapFileName;
+	}
+	public String getMapFileName() {
+		return this.mapFileName;
 	}
 
 	@Override
@@ -248,6 +260,8 @@ public class AdminScreen extends JFrame implements ActionListener {
 			int option = jfl.showOpenDialog(this); // open JFileChooser
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (gos.loadGOS(jfl.getSelectedFile().getPath())) {
+					mapFileName = jfl.getSelectedFile().getPath();
+					System.out.println(mapFileName.indexOf("/Data"));
 					map.updateMap();
 				} else {
 					outputMessage("Could not load file.\nPlease make sure you selected a \".map\" file.",
@@ -268,7 +282,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 			}
 		}
 		if (buttonClicked == backButton) {
-			new BusPlannerGUI();
+			new BusPlannerGUI(gos, gos.getPassengers());
 			this.dispose();
 		}
 	}

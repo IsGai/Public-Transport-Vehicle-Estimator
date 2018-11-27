@@ -14,7 +14,11 @@ public class Passengers<T> extends ArrayList<T> implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private int uID;
 	public Passengers() {
-		importPassengers("src/Data/Passengers.dat"); //default loads from
+		//importPassengers("src/Data/Passengers.dat"); //default loads from
+		//new Passenger(uID);
+	}
+	public Passengers(String fileName) {
+		importPassengers("src/Data/" + fileName + ".dat"); //default loads from
 		new Passenger(uID);
 	}
 

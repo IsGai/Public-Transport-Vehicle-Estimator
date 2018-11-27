@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import collections.GraphOfStations;
+import planner.Station;
 
 public class UserScreen extends JFrame implements ActionListener {
 
@@ -45,7 +47,8 @@ public class UserScreen extends JFrame implements ActionListener {
 
 	private JPanel rightPanel = new JPanel();
 	private GraphOfStations gos;
-	//Map map = new Map(restricted)
+	private Map map;
+	
 	public UserScreen(int id, String name, GraphOfStations gos) {
 		this.setTitle("Passenger Screen");
 		this.setLayout(new GridLayout(1,2));
@@ -75,6 +78,8 @@ public class UserScreen extends JFrame implements ActionListener {
 		nameTextField.setText(name);
 		nameTextField.setEditable(false);
 		this.gos = gos;
+		this.map = new Map(true, gos);
+		map.updateMap();
 	}
 
 	public void leftPanel() {
@@ -100,10 +105,15 @@ public class UserScreen extends JFrame implements ActionListener {
 	}
 
 	public void stationPanel() {
-		String[] tempStations = { "station1", "station2", "station3" };
-		departureComboBox = new JComboBox<String>(tempStations);
+		ArrayList<Station> stationList = gos.getStationList();
+		String[] stationNames = new String[stationList.size()];
+		for(int x=0;x<stationList.size();x++)
+			if(stationList.get(x)!=null)
+				stationNames[x] = stationList.get(x).getName();
+		
+		departureComboBox = new JComboBox<String>(stationNames);
 		departureComboBox.setBackground(Color.white);
-		destinationComboBox = new JComboBox<String>(tempStations);
+		destinationComboBox = new JComboBox<String>(stationNames);
 		destinationComboBox.setBackground(Color.white);
 		
 		stationPanel.setLayout(new BoxLayout(stationPanel, BoxLayout.X_AXIS));
@@ -111,6 +121,8 @@ public class UserScreen extends JFrame implements ActionListener {
 		stationPanel.add(departureComboBox);
 		stationPanel.add(destinationLabel);
 		stationPanel.add(destinationComboBox);
+		departureComboBox.addActionListener(this);
+		destinationComboBox.addActionListener(this);
 	}
 
 	public void removePanel() {
@@ -123,7 +135,7 @@ public class UserScreen extends JFrame implements ActionListener {
 	public void rightPanel() {
 		//Map map = getMapData();
 		rightPanel.setLayout(new BorderLayout());
-		rightPanel.add(new Map(true, null)); //new Map(true, GraphOfStations) should be read from a textfile?
+		rightPanel.add(map); //new Map(true, GraphOfStations) should be read from a textfile?
 	}
 
 	public void userScreen() {
@@ -131,8 +143,10 @@ public class UserScreen extends JFrame implements ActionListener {
 		this.add(rightPanel);
 	}
 
+	Station departureStation = null, destinationStation = null;
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		String selectedStation = "";
 		if (e.getSource() == removeButton) {
 			String id = JOptionPane.showInputDialog(this, "Please verify in ID");
 			String name = JOptionPane.showInputDialog(this, "Please verify in Name");
@@ -140,8 +154,20 @@ public class UserScreen extends JFrame implements ActionListener {
 			// JOptionPane "Please confirm ID and Name to remove.
 		}
 		if(e.getSource() == backButton) {
-			new BusPlannerGUI();
+			new BusPlannerGUI(gos, gos.getPassengers());
 			this.dispose();
 		}
+		if(e.getSource() == departureComboBox) {
+			selectedStation = departureComboBox.getSelectedItem().toString();
+			departureStation = gos.getStationByName(selectedStation);
+		}
+		if(e.getSource() == destinationComboBox) {
+			selectedStation = destinationComboBox.getSelectedItem().toString();
+			destinationStation = gos.getStationByName(selectedStation);
+		}
+		if(departureStation!=null && destinationStation!=null) {
+			map.updateMap(departureStation, destinationStation);
+		}
+		
 	}
 }

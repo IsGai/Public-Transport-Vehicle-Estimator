@@ -31,8 +31,8 @@ public class Driver {
 		temp.tostring();*/
 		
 		
-		//new UserScreen("1000", "Ug Lee");
-		new AdminScreen(new GraphOfStations());
+		//new UserScreen(1020, "Ug Lee");
+		//new AdminScreen(new GraphOfStations());
 		//save();
 	}
 	public static void save() { //generate placeholder data files

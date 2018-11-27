@@ -5,7 +5,7 @@ package planner;
  */
 import collections.LinkedStack;
 
-public class Route {
+public class Route implements Cloneable{
 	LinkedStack<Station> route = new LinkedStack<Station>();
 
 	
@@ -65,10 +65,25 @@ public class Route {
 		return route.isEmpty();
 	}
 	
+	//testing purposes
+	public Station pop() { //same as arrived() except returns a station
+		//used in Map.updateMap(station1, station2)
+		return route.pop();
+	}
 	public void tostring() { //testing purposes
 		System.out.println("route size:" + route.size());
 		while(route.size()>0) {
-			//System.out.println(route.pop().name);
+			System.out.println(route.pop().getName());
 		}
+	}
+	public Route copy() {
+		Route copy = null;
+		try {
+			copy = (Route)super.clone();
+			copy.route = this.route.clone();
+		}catch(CloneNotSupportedException e) {
+			
+		}
+		return copy;
 	}
 }

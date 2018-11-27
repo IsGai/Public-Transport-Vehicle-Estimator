@@ -60,11 +60,24 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 	// other variables
 	// reserved: program automatically loads from Passengers.dat
-	private Passengers<Passenger> passengers = new Passengers<Passenger>();
-	private GraphOfStations gos = new GraphOfStations(passengers);
-	// Route[] routes; //reserved: program automaticall loads from Routes.dat
+	private GraphOfStations gos;
+	private Passengers<Passenger> passengers;
 
+	//with default MAP and PASSENGERS
 	public BusPlannerGUI() {
+		gos = new GraphOfStations(); //default
+		passengers = gos.getPassengers();
+		busPlannerGUI();
+	}
+	
+	//with predefined MAP and PAASSENGERS
+	public BusPlannerGUI(GraphOfStations gos, Passengers<Passenger> passengers) {
+		this.gos = gos;
+		this.passengers = passengers;
+		busPlannerGUI();
+	}
+	
+	public void busPlannerGUI() {
 		this.setTitle("Bus Planner");
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
@@ -74,7 +87,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		guiLocation.x = SCREEN_SIZE.width / 2 - guiSize.width / 2;
 		guiLocation.y = SCREEN_SIZE.height / 2 - guiSize.height / 2;
 		this.setLocation(guiLocation.x, guiLocation.y);
-
+		
 		panelSetups();
 		GUIComponents();
 		addComponents();
