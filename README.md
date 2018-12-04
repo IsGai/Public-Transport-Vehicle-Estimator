@@ -5,9 +5,9 @@ can access. Dijkstra's algorithm is used to find best routes, admin results are 
 done in Java Swing API.
 
 Login defaults:
-Passenger:
+Passenger(
 	id: 1020
-	name: Ug Lee
-Admin:
+	name: Ug Lee)
+Admin(
 	username: username
-	password: password
+	password: password)
