@@ -52,4 +52,8 @@ public class Station implements Serializable{
 	public Point getVertexCoordinate() {
 		return vertexCoordinate;
 	}
+	
+	public ArrayQueue<Passenger> getStationOccupance(){
+		return this.stationOccupance;
+	}
 }

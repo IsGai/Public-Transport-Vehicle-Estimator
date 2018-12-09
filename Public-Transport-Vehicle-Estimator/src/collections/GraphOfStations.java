@@ -52,7 +52,6 @@ public class GraphOfStations implements Serializable{
 		//for testing purposes in Driver.java
 		this.loadGOS("src/Data/" + fileName + ".map");
 		this.passengers = new Passengers<Passenger>(fileName);
-		//this.passengers = new ;
 	}
 	/*
 	 * Description: Adds a station to the graph
@@ -249,6 +248,8 @@ public class GraphOfStations implements Serializable{
 			outputStream.writeObject(stationCount);
 			outputStream.writeObject(stationEdges);
 			outputStream.close();
+			passengers.exportPassengers(fileName);
+			this.fileName = fileName;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -263,6 +264,8 @@ public class GraphOfStations implements Serializable{
 				this.stationCount = (int) inputStream.readObject();
 				this.stationEdges = (StationEdges<String>) inputStream.readObject();
 				inputStream.close();
+				this.fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length()-4);
+				//System.out.println(fileName);
 				loaded =  true;
 			} catch (Exception e) {
 				loaded = false;
@@ -285,5 +288,16 @@ public class GraphOfStations implements Serializable{
 	}
 	public void setPassengers(Passengers<Passenger> passengers) {
 		this.passengers = passengers;
+	}
+	
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+	public String getFileName() {
+		return this.fileName;
+	}
+	public void addPassenger(Passenger p) {
+		this.getPassengers().add(p);
+		this.getPassengers().exportPassengers(fileName);
 	}
 }

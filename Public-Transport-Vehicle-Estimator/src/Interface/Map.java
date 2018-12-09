@@ -2,17 +2,23 @@ package Interface;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -20,38 +26,52 @@ import collections.GraphOfStations;
 import planner.Route;
 import planner.Station;
 
-public class Map extends JPanel implements MouseListener {
+public class Map extends JPanel implements MouseListener , MouseMotionListener{
 	private Line lineTemp;
 	private Oval ovalTemp;
 	private ArrayList<Oval> ovals = new ArrayList<Oval>();
 	private ArrayList<Line> lines = new ArrayList<Line>();
 	private Oval routeStart;
 	private boolean drawingRoute = false;
-	
+
 	private static int STATION_DIAMETER = 25;
 	private static int ROUTE_START_DIAMETER = 15;
-	
+
 	private GraphOfStations gos;
-	//test variables
+	// test variables
 	private boolean drawBestRoute = false;
 	private ArrayList<Oval> routeOvals = new ArrayList<Oval>();
 	private ArrayList<Line> routeLines = new ArrayList<Line>();
+	private boolean drawMyRoute = false;
+	private ArrayList<Oval> routeMyOvals = new ArrayList<Oval>();
+	private ArrayList<Line> routeMyLines = new ArrayList<Line>();
+	//
+	private boolean hoveringOval = false;
+	private Oval hoveredOval;
 
 	public Map(boolean restricted, GraphOfStations gos) {
 		this.setBackground(Color.white);
 		this.setForeground(null);
 		this.gos = gos;
 		this.updateMap();
-		this.setPreferredSize(new Dimension(1000,1000));
+		this.setPreferredSize(new Dimension(1000, 1000));
 
-		if (!restricted)// userScreen won't be able to edit
+		// userScreen won't be able to edit
+		if (!restricted) {
 			this.addMouseListener(this);
+			this.addMouseMotionListener(this);
+		}
 	}
 
 	@Override
 	protected void paintComponent(Graphics g2) {
 		super.paintComponent(g2);
 		Graphics2D g = (Graphics2D) g2;
+
+		// Image icon = new ImageIcon("src/Data/Tamriel(1000x1000).jpg").getImage();
+		// JLabel matrixIcon = new JLabel();
+		// matrixIcon.setIcon(new ImageIcon(icon));
+		// g.drawImage(icon, 0, 0, null);
 
 		g.setColor(Color.black);
 		for (Oval o : ovals) // constantly draws stations
@@ -67,22 +87,10 @@ public class Map extends JPanel implements MouseListener {
 			g.fillOval(routeStart.getX(), routeStart.getY(), routeStart.getD(), routeStart.getD());
 		} else
 			g.setColor(Color.black);
-		if(drawBestRoute) {
-			//System.out.println("drawBestRoute");
-			g.setColor(Color.green);
-			for(Oval ro: routeOvals) {
-				if(ro!=null) {
-					//System.out.println(ro.getX() +","+ ro.getY()+","+ ro.getD()+","+ ro.getD());
-					g.fillOval(ro.getX(), ro.getY(), ro.getD(), ro.getD());
-				}
-			}
-			for (Line rl: routeLines) // constantly draw routes
-				if (rl != null) {
-					g.setStroke(new BasicStroke(5));
-					g.drawLine(rl.getStart().x, rl.getStart().y, rl.getEnd().x, rl.getEnd().y);
-				}
-			g.setColor(Color.black);
-		}
+		if (drawBestRoute)
+			drawBestRoute(g);
+		if (drawMyRoute)
+			drawMyRoute(g);
 		for (Oval o : ovals) // constantly draws ovalNames
 			if (o != null) {
 				g.setColor(Color.blue);
@@ -90,7 +98,56 @@ public class Map extends JPanel implements MouseListener {
 				g.drawString(o.getName(), o.getX(), o.getY());
 				g.setColor(Color.black);
 			}
+		if(hoveringOval)
+			showStationData(g);
+		else this.setCursor(null);
 		repaint();
+	}
+
+	public void drawBestRoute(Graphics2D g) {
+		g.setColor(Color.green);
+		for (Oval ro : routeOvals) {
+			if (ro != null) {
+				g.fillOval(ro.getX(), ro.getY(), ro.getD(), ro.getD());
+			}
+		}
+		for (Line rl : routeLines) // constantly draw routes
+			if (rl != null) {
+				g.setStroke(new BasicStroke(5));
+				g.drawLine(rl.getStart().x, rl.getStart().y, rl.getEnd().x, rl.getEnd().y);
+			}
+		g.setColor(Color.black);
+	}
+
+	public void drawMyRoute(Graphics2D g) {
+		// System.out.println("drawBestRoute");
+		g.setColor(Color.yellow);
+		for (Line rl : routeMyLines) // constantly draw routes
+			if (rl != null) {
+				g.setStroke(new BasicStroke(3));
+				g.drawLine(rl.getStart().x, rl.getStart().y, rl.getEnd().x, rl.getEnd().y);
+			}
+		g.setColor(Color.black);
+	}
+	
+	public void showStationData(Graphics2D g) {
+		int x = hoveredOval.x, y = hoveredOval.y;
+		//draw black-bordered white background rectangle to display data
+		g.setColor(Color.white);
+		g.fillRect(x, y, 100, 50);
+		g.setColor(Color.black);
+		g.setStroke(new BasicStroke(1));
+		g.drawRect(x, y, 100, 50);
+		
+		g.setFont(new Font("Arial", Font.PLAIN, 12));
+		Station temp = gos.getStationByPoint(hoveredOval.getPoint());
+		g.drawString("Passengers: " + temp.getStationOccupance().size(), x, y+10);
+		
+		//make cursor invisible, remember to make visible
+		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+		    cursorImg, new Point(0, 0), "blank cursor");
+		this.setCursor(blankCursor);
 	}
 
 	public boolean sameStation(Oval temp) {
@@ -113,9 +170,13 @@ public class Map extends JPanel implements MouseListener {
 				return true;
 		return false;
 	}
+	
+	public void removeMyRoute() {
+		drawMyRoute = false;
+	}
 
+	//draw map given the GraphOfStation variables
 	public void updateMap() {
-		
 		// add new stations to ovals
 		ArrayList<Station> stationList = gos.getStationList();
 		ArrayList<Oval> newOvals = new ArrayList<Oval>();
@@ -124,7 +185,7 @@ public class Map extends JPanel implements MouseListener {
 				newOvals.add(new Oval(stationList.get(x).getVertexCoordinate(), STATION_DIAMETER,
 						stationList.get(x).getName(), true));
 		ovals = newOvals;
-		
+
 		// add new edges to lines
 		ArrayList<String> stationEdges = gos.getStationEdges();
 		ArrayList<Line> newLines = new ArrayList<Line>();// newLines is used to get rid of duplicated drawn lines
@@ -133,26 +194,47 @@ public class Map extends JPanel implements MouseListener {
 					gos.getStationByName(stationEdges.get(x).split("asdflmfao")[1]).getVertexCoordinate()));
 		this.lines = newLines;
 	}
-	
-	public void updateMap(Station departureStation, Station destinationStation) {
-		//Clean this method up
-		Route bestPath = gos.bestPath(departureStation.getStationId(), destinationStation.getStationId()).copy();
+
+	// draw Passenger selected route
+	public void updateMap(Route route, boolean myRoute) {
+		// Clean this method up
 		Station temp = null;
-		routeOvals = new ArrayList<Oval>();
-		routeLines = new ArrayList<Line>();
+		if (myRoute) {
+			routeMyOvals = new ArrayList<Oval>();
+			routeMyLines = new ArrayList<Line>();
+		} else {
+			routeOvals = new ArrayList<Oval>();
+			routeLines = new ArrayList<Line>();
+		}
 		try {
-			while(true) {
-				temp = bestPath.pop();
-				routeOvals.add(new Oval(temp.getVertexCoordinate(), STATION_DIAMETER,
-						temp.getName(), true));
+			// convert stations to ovals
+			while (true) {
+				temp = route.pop();
+				if (myRoute)
+					routeMyOvals.add(new Oval(temp.getVertexCoordinate(), STATION_DIAMETER, temp.getName(), true));
+				else
+					routeOvals.add(new Oval(temp.getVertexCoordinate(), STATION_DIAMETER, temp.getName(), true));
 			}
-		}catch(EmptyStackException e) {
-			for(int x=1;x<routeOvals.size();x++) {
-				Line tempLine;
-				tempLine = new Line(routeOvals.get(x-1).getPoint(), routeOvals.get(x).getPoint());
-				routeLines.add(tempLine);
+		} catch (EmptyStackException e) {
+			// no more stations to pop
+			// connect the dots(ovals)
+			if (myRoute) {
+				for (int x = 1; x < routeMyOvals.size(); x++) {
+					Line tempLine;
+					tempLine = new Line(routeMyOvals.get(x - 1).getPoint(), routeMyOvals.get(x).getPoint());
+					routeMyLines.add(tempLine);
+				}
+			} else {
+				for (int x = 1; x < routeOvals.size(); x++) {
+					Line tempLine;
+					tempLine = new Line(routeOvals.get(x - 1).getPoint(), routeOvals.get(x).getPoint());
+					routeLines.add(tempLine);
+				}
 			}
-			drawBestRoute = true;
+			if (myRoute)
+				drawMyRoute = true;
+			else
+				drawBestRoute = true; // draw in paintComponents()
 		}
 	}
 
@@ -175,11 +257,17 @@ public class Map extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			Oval tempOval = new Oval(new Point(e.getX(), e.getY()), STATION_DIAMETER, true);
+			Point mousePoint = e.getPoint();
+			mousePoint.x = mousePoint.x - STATION_DIAMETER / 2;
+			mousePoint.y = mousePoint.y - STATION_DIAMETER / 2;
+			Oval tempOval = new Oval(mousePoint, STATION_DIAMETER, true);
 			ovals.add(tempOval);
 			String stationName = JOptionPane.showInputDialog("Enter in station name");
-			tempOval.setName(stationName);
-			gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
+			if (stationName != null) {
+				tempOval.setName(stationName);
+				gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
+			} else
+				ovals.remove(tempOval);
 		}
 	}
 
@@ -231,6 +319,21 @@ public class Map extends JPanel implements MouseListener {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		Point cursor = e.getPoint();
+		if(clickedOnStation(cursor)) {
+			hoveredOval = getClickedStation(cursor);
+			hoveringOval = true;
+		}
+		else hoveringOval = false;
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		
 	}
 
 	@Override

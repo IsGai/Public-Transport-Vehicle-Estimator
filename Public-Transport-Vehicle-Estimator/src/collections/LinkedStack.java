@@ -2,12 +2,13 @@ package collections;
 
 
 
+import java.io.Serializable;
 import java.util.EmptyStackException;
 
 
-public class LinkedStack<E> implements Cloneable
+public class LinkedStack<E> implements Cloneable, Serializable
 {
-
+	private static final long serialVersionUID = 1L;
 private Node<E> head; 
 
 /*

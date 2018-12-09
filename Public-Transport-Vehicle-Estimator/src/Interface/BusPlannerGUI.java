@@ -61,22 +61,29 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	// other variables
 	// reserved: program automatically loads from Passengers.dat
 	private GraphOfStations gos;
-	private Passengers<Passenger> passengers;
+	private String fileName = "";
 
-	//with default MAP and PASSENGERS
+	// with default MAP and PASSENGERS
 	public BusPlannerGUI() {
-		gos = new GraphOfStations(); //default
-		passengers = gos.getPassengers();
+		gos = new GraphOfStations(); // default
+		fileName = gos.getFileName();
+		busPlannerGUI();
+	}
+
+	// with predefined MAP and PAASSENGERS
+	public BusPlannerGUI(GraphOfStations gos) {
+		this.gos = gos;
+		fileName = gos.getFileName();
 		busPlannerGUI();
 	}
 	
-	//with predefined MAP and PAASSENGERS
 	public BusPlannerGUI(GraphOfStations gos, Passengers<Passenger> passengers) {
 		this.gos = gos;
-		this.passengers = passengers;
+		gos.setPassengers(passengers);
+		fileName = gos.getFileName();
 		busPlannerGUI();
 	}
-	
+
 	public void busPlannerGUI() {
 		this.setTitle("Bus Planner");
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
@@ -87,7 +94,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		guiLocation.x = SCREEN_SIZE.width / 2 - guiSize.width / 2;
 		guiLocation.y = SCREEN_SIZE.height / 2 - guiSize.height / 2;
 		this.setLocation(guiLocation.x, guiLocation.y);
-		
+
 		panelSetups();
 		GUIComponents();
 		addComponents();
@@ -214,21 +221,23 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		}
 		if (temp == addUserButton) {
 			String name = JOptionPane.showInputDialog("Enter in your name.");
-			Passenger p = new Passenger(name);
-			passengers.add(p);
-			outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
-					+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
-			passengers.exportPassengers("src/Data/Passengers.dat");
+			if (name.length() > 0) {
+				Passenger p = new Passenger(name);
+				gos.addPassenger(p);
+				outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
+						+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
+			}
 		}
 		if (temp == remUserButton) {
 			String id = JOptionPane.showInputDialog("Verify ID.");
 			String name = JOptionPane.showInputDialog("Verify name.");
 			try {
-				boolean removed = passengers.removePassenger(Integer.parseInt(id), name);
-				if (removed)
+				boolean removed = gos.getPassengers().removePassenger(Integer.parseInt(id), name);
+				if (removed) {
 					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
 							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
-				else
+					gos.getPassengers().exportPassengers(fileName);
+				} else
 					outputMessage("Passenger[ID:" + id + ", Name:" + name
 							+ "] could not be found.\nPlease make sure you've entered in the correct information.",
 							"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
@@ -245,14 +254,13 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 				String name = nameTextField.getText();
 				try {
 					id = Integer.parseInt(idTextField.getText());
-					Passenger currentPassenger = passengers.getPassenger(id, name);
+					Passenger currentPassenger = gos.getPassengers().getPassenger(id, name); // search for passenger
 					if (currentPassenger != null) {
-						new UserScreen(id, name, gos);
+						new UserScreen(currentPassenger, gos);
 						this.dispose();
 					} else {
-						outputMessage(
-								"Could not find passenger with information.\nPassenger[ID:" + id + ", Name:" + name + "]",
-								"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
+						outputMessage("Could not find passenger with information.\nPassenger[ID:" + id + ", Name:"
+								+ name + "]", "Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
 					}
 				} catch (NumberFormatException nfe) {
 					outputMessage("Make sure ID textfield is only numbers.\nie: \"1000\".", "Invalid ID Format",

@@ -1,11 +1,14 @@
 package planner;
+import java.io.Serializable;
+
 /*Description: This class wraps the LinkedStack class to create a model of
  * a "route" keeping track of the stations a passenger will need to 
  * go to.
  */
 import collections.LinkedStack;
 
-public class Route implements Cloneable{
+public class Route implements Cloneable, Serializable{
+	private static final long serialVersionUID = 1L;
 	LinkedStack<Station> route = new LinkedStack<Station>();
 
 	

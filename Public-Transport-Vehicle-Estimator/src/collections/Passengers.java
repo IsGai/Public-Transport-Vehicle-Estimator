@@ -9,16 +9,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import planner.Passenger;
+import planner.Route;
 
-public class Passengers<T> extends ArrayList<T> implements Serializable {
+public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
-	private int uID;
+	private int uID = 1000;
 	public Passengers() {
-		//importPassengers("src/Data/Passengers.dat"); //default loads from
-		//new Passenger(uID);
+		new Passenger(uID);
 	}
 	public Passengers(String fileName) {
-		importPassengers("src/Data/" + fileName + ".dat"); //default loads from
+		importPassengers("src/Data/" + fileName + ".pas"); //default loads from
 		new Passenger(uID);
 	}
 
@@ -57,17 +57,23 @@ public class Passengers<T> extends ArrayList<T> implements Serializable {
 
 		}
 		this.uID = uID;
+		this.clear();
 		this.addAll(p);
 	}
 
-	public void exportPassengers(String filePath) {
+	public void exportPassengers(String fileName) {
 		try {
-			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filePath));
+			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("src/Data/" + fileName + ".pas"));
 			outputStream.writeInt(Passenger.getUid());
 			outputStream.writeObject(this);
 			outputStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	public Passengers<T> copy() {
+		Passengers copy = null;
+		copy = (Passengers<T>)super.clone();
+		return copy;
 	}
 }

@@ -14,7 +14,11 @@ public class Passenger implements Serializable{
 	private static int uID = 1000;
 	private int id;
 	public Passenger(int uID) {
-		this.uID = uID;
+		/*BusPlannerGUI
+		 * automatically load map and pas data
+		 * this method assures that the passengers ID start back where they left off
+		 */
+		Passenger.uID = uID; 
 	}
 	public Passenger(String name) {
 		this.name = name;
@@ -38,5 +42,12 @@ public class Passenger implements Serializable{
 	}
 	public static int getUid() {
 		return Passenger.uID;
+	}
+	public void setRoute(Route route) {
+		this.myRoute = route;
+		this.myRoute.nextStation().addPassenger(this); //reference passenger in station
+	}
+	public Route getRoute() {
+		return this.myRoute;
 	}
 }

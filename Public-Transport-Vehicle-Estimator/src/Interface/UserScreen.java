@@ -1,4 +1,5 @@
 package Interface;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,16 +11,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import collections.GraphOfStations;
+import planner.Passenger;
+import planner.Route;
 import planner.Station;
 
 public class UserScreen extends JFrame implements ActionListener {
@@ -41,6 +47,10 @@ public class UserScreen extends JFrame implements ActionListener {
 	private JComboBox<String> departureComboBox;// change <String> to <Route>
 	private JLabel destinationLabel = new JLabel("Destination:");
 	private JComboBox<String> destinationComboBox;// change <String> to <Route>
+	private JPanel routePanel = new JPanel();
+	private JButton saveRouteButton = new JButton("Save Route");
+	private JButton removeRouteButton = new JButton("Remove Route");
+	private JButton showRouteButton = new JButton("Show My Route");
 	private JPanel removePanel = new JPanel();
 	private JButton removeButton = new JButton("Remove Trip/Passenger");
 	private JButton backButton = new JButton("Return to Login Screen");
@@ -48,10 +58,11 @@ public class UserScreen extends JFrame implements ActionListener {
 	private JPanel rightPanel = new JPanel();
 	private GraphOfStations gos;
 	private Map map;
-	
-	public UserScreen(int id, String name, GraphOfStations gos) {
+	private Passenger passenger;
+
+	public UserScreen(Passenger passenger, GraphOfStations gos) {
 		this.setTitle("Passenger Screen");
-		this.setLayout(new GridLayout(1,2));
+		this.setLayout(new GridLayout(1, 2));
 
 		guiSize.width = (int) (SCREEN_SIZE.width / 1.7);
 		guiSize.height = (int) (SCREEN_SIZE.height / 1.2);
@@ -61,7 +72,7 @@ public class UserScreen extends JFrame implements ActionListener {
 		// this.setLocationRelativeTo(null);
 		this.setLocation(guiLocation.x, guiLocation.y);
 
-		initialSetup(id, name, gos);
+		initialSetup(passenger, gos);
 		leftPanel();
 		rightPanel();
 		userScreen();
@@ -72,26 +83,29 @@ public class UserScreen extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	public void initialSetup(int id, String name, GraphOfStations gos) {
-		idTextField.setText(id + "");
+	public void initialSetup(Passenger passenger, GraphOfStations gos) {
+		this.passenger = passenger;
+		idTextField.setText(passenger.getId() + "");
 		idTextField.setEditable(false);
-		nameTextField.setText(name);
+		nameTextField.setText(passenger.getName());
 		nameTextField.setEditable(false);
+
 		this.gos = gos;
 		this.map = new Map(true, gos);
-		map.updateMap();
 	}
 
 	public void leftPanel() {
 		passengerPanel();
 		stationPanel();
+		routePanel();
 		removePanel();
 		leftPanel.setLayout(new BorderLayout());
-		
-		JPanel tempPanel = new JPanel(new GridLayout(3,1,5,5));
+
+		JPanel tempPanel = new JPanel(new GridLayout(3, 1, 5, 5));
 		tempPanel.add(passengerPanel);
 		tempPanel.add(stationPanel);
-		
+		tempPanel.add(routePanel);
+
 		leftPanel.add(tempPanel, BorderLayout.NORTH);
 		leftPanel.add(removePanel, BorderLayout.SOUTH);
 	}
@@ -107,15 +121,22 @@ public class UserScreen extends JFrame implements ActionListener {
 	public void stationPanel() {
 		ArrayList<Station> stationList = gos.getStationList();
 		String[] stationNames = new String[stationList.size()];
-		for(int x=0;x<stationList.size();x++)
-			if(stationList.get(x)!=null)
+		for (int x = 0; x < stationList.size(); x++)
+			if (stationList.get(x) != null)
 				stationNames[x] = stationList.get(x).getName();
-		
+		for(int x=0;x<stationNames.length;x++)
+			for(int y=0;y<stationNames.length-1;y++)
+				if(stationNames[y].compareTo(stationNames[y+1]) > 0) {
+					String temp = stationNames[y];
+					stationNames[y] = stationNames[y+1];
+					stationNames[y+1] = temp;
+				}
+
 		departureComboBox = new JComboBox<String>(stationNames);
 		departureComboBox.setBackground(Color.white);
 		destinationComboBox = new JComboBox<String>(stationNames);
 		destinationComboBox.setBackground(Color.white);
-		
+
 		stationPanel.setLayout(new BoxLayout(stationPanel, BoxLayout.X_AXIS));
 		stationPanel.add(departureLabel);
 		stationPanel.add(departureComboBox);
@@ -123,6 +144,15 @@ public class UserScreen extends JFrame implements ActionListener {
 		stationPanel.add(destinationComboBox);
 		departureComboBox.addActionListener(this);
 		destinationComboBox.addActionListener(this);
+	}
+
+	public void routePanel() {
+		saveRouteButton.addActionListener(this);
+		removeRouteButton.addActionListener(this);
+		showRouteButton.addActionListener(this);
+		routePanel.add(saveRouteButton);
+		routePanel.add(removeRouteButton);
+		routePanel.add(showRouteButton);
 	}
 
 	public void removePanel() {
@@ -133,9 +163,16 @@ public class UserScreen extends JFrame implements ActionListener {
 	}
 
 	public void rightPanel() {
-		//Map map = getMapData();
 		rightPanel.setLayout(new BorderLayout());
-		rightPanel.add(map); //new Map(true, GraphOfStations) should be read from a textfile?
+		addScrollPane(rightPanel, map, "" + gos.getFileName() + "");
+	}
+
+	public void addScrollPane(JPanel panel, JPanel panel2, String title) {
+		JScrollPane temp = new JScrollPane(panel2, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		panel.setBorder(BorderFactory.createTitledBorder(title));
+		panel.setBackground(null);
+		panel.add(temp);
 	}
 
 	public void userScreen() {
@@ -143,31 +180,93 @@ public class UserScreen extends JFrame implements ActionListener {
 		this.add(rightPanel);
 	}
 
+	public void outputMessage(String message, String title, int messageType) {
+		JOptionPane.showMessageDialog(this, message, title, messageType);
+	}
+
 	Station departureStation = null, destinationStation = null;
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String selectedStation = "";
 		if (e.getSource() == removeButton) {
 			String id = JOptionPane.showInputDialog(this, "Please verify in ID");
 			String name = JOptionPane.showInputDialog(this, "Please verify in Name");
-			System.out.println(id + ", " + name);
+			try {
+				int actualId = Integer.parseInt(id);
+				if (passenger.getId() == actualId && passenger.getName().equalsIgnoreCase(name)) {
+					int option = JOptionPane.showConfirmDialog(this, "Are you sure you want to remove\n"
+							+ "Passenger[ID:" + passenger.getId() + ", Name:" + passenger.getName() + "]?");
+					if (option == JOptionPane.OK_OPTION) {
+						gos.getPassengers().remove(passenger);
+						gos.getPassengers().exportPassengers(gos.getFileName());
+						outputMessage(
+								"Passenger[ID:" + passenger.getId() + ", Name:" + passenger.getName()
+										+ "] has been deleted.\n" + "Returning to mainscreen.",
+								"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
+						new BusPlannerGUI(gos, gos.getPassengers());
+						this.dispose();
+					}
+				}
+			} catch (NumberFormatException exception) {
+				outputMessage("The information is incorrect!", "Error Message", JOptionPane.ERROR_MESSAGE);
+			}
 			// JOptionPane "Please confirm ID and Name to remove.
 		}
-		if(e.getSource() == backButton) {
+		if (e.getSource() == backButton) {
 			new BusPlannerGUI(gos, gos.getPassengers());
 			this.dispose();
 		}
-		if(e.getSource() == departureComboBox) {
+		if (e.getSource() == departureComboBox) {
 			selectedStation = departureComboBox.getSelectedItem().toString();
 			departureStation = gos.getStationByName(selectedStation);
 		}
-		if(e.getSource() == destinationComboBox) {
+		if (e.getSource() == destinationComboBox) {
 			selectedStation = destinationComboBox.getSelectedItem().toString();
 			destinationStation = gos.getStationByName(selectedStation);
 		}
-		if(departureStation!=null && destinationStation!=null) {
-			map.updateMap(departureStation, destinationStation);
+		if (e.getSource() == saveRouteButton) {
+			if (departureStation == null && destinationStation == null)
+				outputMessage("Please select a route first!", "Error Message", JOptionPane.ERROR_MESSAGE);
+			else {
+				outputMessage(departureStation.getName() + " to " + destinationStation.getName() + " route saved!",
+						"Route Saved", JOptionPane.PLAIN_MESSAGE);
+				passenger.setRoute(gos.bestPath(departureStation.getStationId(), destinationStation.getStationId()));
+				gos.getPassengers().exportPassengers(gos.getFileName());
+				gos.saveGos(gos.getFileName());
+			}
 		}
-		
+		if (e.getSource() == removeRouteButton) {
+			if (passenger.getRoute() != null) {
+				String startStation = passenger.getRoute().pop().getName();
+				String endStation = "";
+				while(!passenger.getRoute().isEmpty()) 
+					endStation = passenger.getRoute().pop().getName();
+				outputMessage("Route " + startStation + " to " + endStation + " removed" , "Route Removed", JOptionPane.PLAIN_MESSAGE);
+				passenger.setRoute(null);
+				gos.getPassengers().exportPassengers(gos.getFileName());
+			} else {
+				map.removeMyRoute();
+				outputMessage("Passenger has no route saved!", "Error Message", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		if(e.getSource() == showRouteButton) {
+			if(passenger.getRoute()!=null) {
+				Route tempRoute = passenger.getRoute().copy();
+				Station s1 = tempRoute.pop();
+				Station sLast = null;
+				while(!tempRoute.isEmpty())
+					sLast = tempRoute.pop();
+				map.updateMap(gos.bestPath(s1.getStationId(), sLast.getStationId()), true);
+			}else {
+				map.removeMyRoute();
+				outputMessage("No route saved", "Error Message", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		if (departureStation != null && destinationStation != null) {
+			// draw route on GUI map
+			map.updateMap(gos.bestPath(departureStation.getStationId(), destinationStation.getStationId()), false);
+		}
+
 	}
 }
