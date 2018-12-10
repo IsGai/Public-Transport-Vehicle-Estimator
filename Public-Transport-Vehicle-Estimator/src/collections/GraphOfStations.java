@@ -1,3 +1,8 @@
+/*
+ * Class description: Implementation of Graph data structure for type Station.
+ * Also includes methods for Djikstras and a simulation.
+ */
+
 package collections;
 
 import static java.lang.Math.pow;

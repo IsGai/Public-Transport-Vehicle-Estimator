@@ -1,3 +1,6 @@
+/*
+ * Class description: Implementation of Node for use with linked list.
+ */
 package collections;
 
 import java.io.Serializable;

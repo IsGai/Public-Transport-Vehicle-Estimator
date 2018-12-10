@@ -1,3 +1,7 @@
+/*
+ * Class description: Implementation of Stack data structure that 
+ * uses a linked list.
+ */
 package collections;
 
 

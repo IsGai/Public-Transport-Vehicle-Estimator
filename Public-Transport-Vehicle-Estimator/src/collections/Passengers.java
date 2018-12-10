@@ -1,3 +1,7 @@
+/*
+ * Class description: Implementation of ArrayList for type Passenger.
+ * Also includes methods to write data to disk.
+ */
 package collections;
 
 import java.io.FileInputStream;
@@ -54,7 +58,7 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 			}
 			inputStream.close();
 		} catch (IOException e) {
-
+			System.out.println(filePath);
 		}
 		this.uID = uID;
 		this.clear();
