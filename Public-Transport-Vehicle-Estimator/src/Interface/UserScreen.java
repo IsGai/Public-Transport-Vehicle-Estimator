@@ -54,6 +54,9 @@ public class UserScreen extends JFrame implements ActionListener {
 	private JPanel removePanel = new JPanel();
 	private JButton removeButton = new JButton("Remove Trip/Passenger");
 	private JButton backButton = new JButton("Return to Login Screen");
+	private JPanel timePanel = new JPanel();
+	private JComboBox<String> timeComboBox;
+	private JButton timeButton = new JButton("Save time");
 
 	private JPanel rightPanel = new JPanel();
 	private GraphOfStations gos;
@@ -99,13 +102,15 @@ public class UserScreen extends JFrame implements ActionListener {
 		stationPanel();
 		routePanel();
 		removePanel();
+		timePanel();
 		leftPanel.setLayout(new BorderLayout());
 
 		JPanel tempPanel = new JPanel(new GridLayout(3, 1, 5, 5));
 		tempPanel.add(passengerPanel);
 		tempPanel.add(stationPanel);
 		tempPanel.add(routePanel);
-
+		tempPanel.add(timePanel);
+		
 		leftPanel.add(tempPanel, BorderLayout.NORTH);
 		leftPanel.add(removePanel, BorderLayout.SOUTH);
 	}
@@ -160,6 +165,17 @@ public class UserScreen extends JFrame implements ActionListener {
 		removeButton.addActionListener(this);
 		removePanel.add(backButton);
 		backButton.addActionListener(this);
+	}
+	
+	public void timePanel() {
+		String[] timeStrings = { "7:00am", "7:30am", "8:00am", "8:30am", "9:00am",
+				"9:30am", "10:00am", "10:30am", "11:00am", "11:30am", "12:00pm",
+				"12:30pm", "1:00pm", "1:30pm", "2:00pm", "2:30pm", "3:00pm"};
+		timeComboBox = new JComboBox(timeStrings);
+		timeComboBox.addActionListener(this);
+		timeButton.addActionListener(this);
+		timePanel.add(timeComboBox);
+		timePanel.add(timeButton);
 	}
 
 	public void rightPanel() {
@@ -262,6 +278,10 @@ public class UserScreen extends JFrame implements ActionListener {
 				map.removeMyRoute();
 				outputMessage("No route saved", "Error Message", JOptionPane.ERROR_MESSAGE);
 			}
+		}
+		if (e.getSource() == timeComboBox) {
+			int time = 420 + (30 * timeComboBox.getSelectedIndex());
+			passenger.setTime(time);
 		}
 		if (departureStation != null && destinationStation != null) {
 			// draw route on GUI map
