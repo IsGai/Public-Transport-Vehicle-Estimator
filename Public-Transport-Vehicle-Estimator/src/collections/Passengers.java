@@ -33,11 +33,18 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 	}
 	public boolean removePassenger(int id, String name) {
 		for (T p : this)
-			if (p != null)
-				if (((Passenger) p).getName().equalsIgnoreCase(name) && ((Passenger) p).getId() == id) {
+			if (p != null) {
+				Passenger passenger = (Passenger)p;
+				if (passenger.getName().equalsIgnoreCase(name) && passenger.getId() == id) {
+					try {
+						passenger.getRoute().nextStation().removePassenger(passenger);
+					} catch (Exception e) {
+						
+					}
 					this.remove(p);
 					return true;
 				}
+			}
 		return false;
 	}
 

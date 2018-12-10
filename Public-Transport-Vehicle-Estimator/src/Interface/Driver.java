@@ -13,7 +13,7 @@ import planner.Station;
 public class Driver {
 	static Passengers<Passenger> p = new Passengers<Passenger>();
 	public static void main(String[] args) {
-		exportPassengers("Tamriel");
+		//exportPassengers("Tamriel");
 	}
 	public static void exportPassengers(String fileName) {
 		try {

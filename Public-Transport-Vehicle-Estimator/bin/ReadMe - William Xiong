@@ -1,0 +1,36 @@
+Login defaults:
+Passenger:
+	id: 1020
+	name: Ug Lee
+Admin:
+	username: username
+	password: password
+	
+11/27/18 0112 Central Time US
+-Need to Do:
+	-make it so when loading a .map, it will also load the corresponding .dat for the passengers
+	-implement feature: stations being able to hold passengers
+		-for if(passenger p.stationName = s.getName ) s.addPassenger(p)
+	-other stuff
+-Update:
+	-On AdminScreen:
+		-can add routes/stations via clicking on the maps or using the buttons
+		-can save/load map
+		-can clear current map(reset GraphOfStations variables)
+		-cannot add/remove passengers
+		-cannot remove stations/routes
+		-cannot show all passengers
+	-On UserScreen:
+		-can return to LoginScreen
+		-shows user login ID and Name
+		-now loads Default.map, or can load custom map if first going to ADminSscreen and loading the map there
+			then returning to userScreen, NOTE: passengers do not relate according to maps yet
+		-selecting both dest/depa stations with show the best route on the map in green
+	-On LoginScreen:
+		-can add passengers with only the name, ID is generated. ie: 1000, 1010, 1020, etc...
+		-can remove passengers via ID and name
+		-can login with passenger ID and name if passenger exist in Default.dat
+	-Passengers.java
+		-is automatically loaded from Default.dat, which is will be used for Default.map
+	-GraphOfStations.java
+		-loads Default.map, automatically initializes passengers from Default.dat

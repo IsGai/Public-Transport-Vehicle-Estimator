@@ -168,6 +168,10 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		this.validate();
 	}
 
+	/**Determines if Username and Password inputs on Admin tab
+	 * matches with the username and password in Admin.dat
+	 * @return true - if username/password matches with Admin.dat
+	 */
 	public boolean validateAdmin() {
 		String[] admin = readAdmin("src/Data/Admin.dat");
 		if (!usernameTextField.getText().equals(admin[0])) {
@@ -179,6 +183,11 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		return true;
 	}
 
+	/**
+	 * Reads from Admin.dat, returns an array of String sized 2
+	 * @param filePath - relative path to Admin.dat
+	 * @return String[0] = username, String[1] = password
+	 */
 	public String[] readAdmin(String filePath) {// has to be changed according to data structures
 		String username = "";
 		String password = "";
@@ -205,6 +214,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JButton temp = (JButton) e.getSource();
+		//switch to user tab
 		if (temp == userButton) {
 			adminButton.setEnabled(true);
 			userButton.setEnabled(false);
@@ -212,6 +222,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 			remUserButton.setVisible(true);
 			changeScreenTo(userPanel);
 		}
+		//switch to admin tab
 		if (temp == adminButton) {
 			userButton.setEnabled(true);
 			adminButton.setEnabled(false);
@@ -221,7 +232,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		}
 		if (temp == addUserButton) {
 			String name = JOptionPane.showInputDialog("Enter in your name.");
-			if (name.length() > 0) {
+			if (name!=null && name.length() > 0) { //makes sure user did not just click cancel
 				Passenger p = new Passenger(name);
 				gos.addPassenger(p);
 				outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
@@ -232,8 +243,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 			String id = JOptionPane.showInputDialog("Verify ID.");
 			String name = JOptionPane.showInputDialog("Verify name.");
 			try {
-				boolean removed = gos.getPassengers().removePassenger(Integer.parseInt(id), name);
-				if (removed) {
+				if (gos.getPassengers().removePassenger(Integer.parseInt(id), name)) {
 					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
 							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
 					gos.getPassengers().exportPassengers(fileName);
@@ -242,6 +252,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 							+ "] could not be found.\nPlease make sure you've entered in the correct information.",
 							"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
 			} catch (NumberFormatException e2) {
+				//Error message if ID is not an Integer
 				outputMessage("Please enter in a number. ie: \"1000\".", "Invalid ID Format",
 						JOptionPane.ERROR_MESSAGE);
 			}
