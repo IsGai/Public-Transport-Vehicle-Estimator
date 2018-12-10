@@ -23,7 +23,7 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 		new Passenger(uID);
 	}
 	public Passengers(String fileName) {
-		importPassengers("src/Data/" + fileName + ".pas"); //default loads from
+		importPassengers("" + fileName + ".pas"); //default loads from
 		new Passenger(uID);
 	}
 
@@ -70,7 +70,7 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 
 	public void exportPassengers(String fileName) {
 		try {
-			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("src/Data/" + fileName + ".pas"));
+			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("" + fileName + ".pas"));
 			outputStream.writeInt(Passenger.getUid());
 			outputStream.writeObject(this);
 			outputStream.close();

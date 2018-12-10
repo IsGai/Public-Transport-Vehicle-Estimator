@@ -63,7 +63,7 @@ public class GraphOfStations implements Serializable {
 
 	public GraphOfStations() {
 		// for testing purposes in Driver.java
-		this.loadGOS("src/Data/" + fileName + ".map");
+		this.loadGOS("" + fileName + ".map");
 		this.passengers = new Passengers<Passenger>(fileName);
 	}
 
@@ -223,48 +223,52 @@ public class GraphOfStations implements Serializable {
 		int time;
 		boolean loopFlag;
 		for (int pass = 0; pass < numberOfPassengers; pass++) {
-			System.out.println(passengers.get(pass).getName());
-			System.out.println(passengers.get(pass).getRoute().nextStation().getName());
-			routeForSim = passengers.get(pass).getRoute().copy();
-			time = passengers.get(pass).getTime();
-			// Loop through each station.
-			loopFlag = true;
-			while (loopFlag) {
-				firstStation = routeForSim.pop();
-				firstID = firstStation.getStationId();
-				// Catches if last station.
-				try {
-					secondStation = routeForSim.nextStation();
-					secondID = secondStation.getStationId();
-				} catch (Exception e) {
-					// Last station no value to write because passenger leaves.
-					loopFlag = false;
-					break;
-				}
+			// System.out.println(passengers.get(pass).getName());
+			// System.out.println(passengers.get(pass).getRoute().nextStation().getName());
+			if (passengers.get(pass).getRoute() != null) {
+				routeForSim = passengers.get(pass).getRoute().copy();
+				time = passengers.get(pass).getTime();
+				// Loop through each station.
+				loopFlag = true;
+				while (loopFlag) {
+					firstStation = routeForSim.pop();
+					firstID = firstStation.getStationId();
+					// Catches if last station.
+					try {
+						secondStation = routeForSim.nextStation();
+						secondID = secondStation.getStationId();
+					} catch (Exception e) {
+						// Last station no value to write because passenger leaves.
+						loopFlag = false;
+						break;
+					}
 
-				int roundedWeight = (int) Math.ceil(adjacencyList.get(firstID).get(secondID));
+					int roundedWeight = (int) Math.ceil(adjacencyList.get(firstID).get(secondID)) / 20;
+					//System.out.println(roundedWeight);
 
-				// Write values for station.
-				while ((time % roundedWeight) != 0) {
-					passengerLocations[firstID][time]++;
-					time++;
-				}
+					// Write values for station.
+					while ((time % roundedWeight) != 0) {
+						passengerLocations[firstID][time]++;
+						time++;
+					}
 
-				// Write values for bus.
-				while (roundedWeight > 0) {
-					passengerLocations[bus][time]++;
-					roundedWeight--;
-					time++;
+					roundedWeight*=10;
+					// Write values for bus.
+					while (roundedWeight > 0) {
+						passengerLocations[bus][time]++;
+						roundedWeight--;
+						time++;
+					}
 				}
 			}
-
 		}
+		/*
 		for (int i = 0; i < numberOfStations + 1; i++) {
 			for (int j = 0; j < 1440; j++) {
 				System.out.print(passengerLocations[i][j] + " ");
 			}
 			System.out.print("\n");
-		}
+		}*/
 		return passengerLocations;
 	}
 
@@ -321,7 +325,7 @@ public class GraphOfStations implements Serializable {
 	public void saveGos(String fileName) {
 		try {
 			ObjectOutputStream outputStream = new ObjectOutputStream(
-					new FileOutputStream("src/Data/" + fileName + ".map"));
+					new FileOutputStream("" + fileName + ".map"));
 			outputStream.writeObject(adjacencyList);
 			outputStream.writeObject(stationList);
 			outputStream.writeObject(stationCount);
@@ -393,7 +397,7 @@ public class GraphOfStations implements Serializable {
 				p.getRoute().nextStation().passengerRemove(p);
 			boolean successfulRemove = this.getPassengers().remove(p);
 			this.getPassengers().exportPassengers(fileName);
-			
+
 			return successfulRemove;
 		} else
 			return false;

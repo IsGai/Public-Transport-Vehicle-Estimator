@@ -185,7 +185,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	 * @return true - if Admin.dat username/passwords match what's on the textFields
 	 */
 	public boolean validateAdmin() {
-		String[] admin = readAdmin("src/Data/Admin.dat");
+		String[] admin = readAdmin("Admin.dat");
 		if (!usernameTextField.getText().equals(admin[0])) {
 			return false;
 		}

@@ -144,9 +144,10 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		g.setColor(Color.black);
 	}
 	
-	public int getPassengerCount(int StationId){
+	public int getPassengerCount(int id){
 		int time = ts.getValue();
-		return this.pl[StationId][time];
+		//System.out.println(id + " " + time + "|" + this.pl[id][time]);
+		return this.pl[id][time];
 	}
 
 	public void showStationData(Graphics2D g) {
@@ -161,6 +162,8 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		g.setFont(new Font("Arial", Font.PLAIN, 12));
 		Station temp = gos.getStationByPoint(hoveredOval.getPoint());
 		g.drawString("StationName: " + temp.getName(), x, y + 10);
+		//System.out.println("PSIZE: " + temp.getPassengers().size());
+		if(temp.getPassengers()!=null)
 		g.drawString("Passengers : " + getPassengerCount (temp.getStationId()) , x, y + 20);
 
 		// make cursor invisible, remember to make visible
@@ -288,6 +291,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 				if (stationName != null) {
 					tempOval.setName(stationName);
 					gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
+					pl = gos.simulatePlacements();
 				} else
 					ovals.remove(tempOval);
 			}

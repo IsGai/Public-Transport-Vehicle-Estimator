@@ -29,8 +29,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class AdminScreen extends JFrame implements ActionListener {
+public class AdminScreen extends JFrame implements ActionListener, ChangeListener {
 
 	// GUI related
 	static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
@@ -58,6 +60,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 	private JPanel timePanel = new JPanel();
 	private JSlider timeSlider = new JSlider(0,1439,1);
 	private JLabel timeLabel = new JLabel("Time: ");
+	private JLabel peopleOnBuses = new JLabel("People on Buses: ");
 
 	private JButton backButton = new JButton("Return to Login Screen");
 	// addbuttons to show all passengers
@@ -99,6 +102,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 		mapFileName = gos.getFileName();
 		passengerLocations = gos.simulatePlacements();
 		map = new Map(false, gos, timeSlider, passengerLocations);
+		timeSlider.addChangeListener(this);
 
 		// BUTTONS YET TO BE IMPLEMENTED
 
@@ -134,6 +138,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 		tempPanel.add(clearMapButton);
 		tempPanel.add(passengersPanel);
 		tempPanel.add(timePanel);
+		tempPanel.add(peopleOnBuses);
 
 		leftPanel.add(tempPanel, BorderLayout.NORTH);
 		leftPanel.add(backButton, BorderLayout.SOUTH);
@@ -238,6 +243,17 @@ public class AdminScreen extends JFrame implements ActionListener {
 		int time = timeSlider.getValue();
 		return this.passengerLocations[StationId][time];
 	}
+	
+	public void setTime(int time) {
+		int hours = time/60; 
+		int minutes = time%60;
+		String actualTime = String.format("%d:%02d", hours, minutes);
+		timeLabel.setText("Time: " + actualTime);
+	}
+	
+	public void setPeopleOnBuses(int people) {
+		peopleOnBuses.setText("People on Buses: " + people);
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -285,6 +301,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 			} else {
 				Station s = new Station(stationN, new Point(stationX, stationY));
 				gos.addStation(s);
+				passengerLocations = gos.simulatePlacements();
 				map.updateMap();
 			}
 		}
@@ -320,7 +337,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 			}
 		}
 		if (e.getSource() == loadMapButton) {
-			JFileChooser jfl = new JFileChooser("src/Data");
+			JFileChooser jfl = new JFileChooser("Data");
 			jfl.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			int option = jfl.showOpenDialog(this); // open JFileChooser
 			if (option == JFileChooser.APPROVE_OPTION) {
@@ -363,10 +380,19 @@ public class AdminScreen extends JFrame implements ActionListener {
 				map.updateMap(p.getRoute().copy(), true);
 		}
 		if (e.getSource() == backButton) {
-			gos.loadGOS("src/Data/" + mapFileName + ".map");
-			gos.getPassengers().importPassengers("src/Data/" + mapFileName + ".pas");
+			gos.loadGOS("" + mapFileName + ".map");
+			gos.getPassengers().importPassengers("" + mapFileName + ".pas");
 			new BusPlannerGUI(gos, gos.getPassengers());
 			this.dispose();
+		}
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		if(e.getSource() == timeSlider) {
+			setTime(timeSlider.getValue());
+			//System.out.println(passengerLocations.length);
+			setPeopleOnBuses(passengerLocations[gos.getPassengers().size()+1][timeSlider.getValue()]);
 		}
 	}
 }
