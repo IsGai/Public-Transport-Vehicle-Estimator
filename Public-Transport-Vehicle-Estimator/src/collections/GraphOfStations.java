@@ -188,6 +188,79 @@ public class GraphOfStations implements Serializable{
 		return bestRoute;
 
 	}
+	
+	public int[][] simulatePlacements() {
+		int numberOfPassengers = passengers.size();
+		int numberOfStations = stationList.size();
+		int bus = numberOfStations;
+
+		int[][] passengerLocations = new int[numberOfStations + 1][1440];
+		//Initialize all locations and times to 0.
+		for(int i = 0; i < 1440; i++) {
+			for(int j = 0; j < numberOfPassengers; j++) {
+				passengerLocations[j][i] = 0;
+			}
+		}
+		
+		//Outer loop goes through all passengers.
+		Station firstStation;
+		int firstID;
+		Station secondStation;
+		int secondID;
+		Route routeForSim;
+		int time;
+		boolean loopFlag;
+		for(int pass = 0; pass < numberOfPassengers; pass++) {
+			System.out.println(passengers.get(pass).getName());
+			routeForSim = passengers.get(pass).getRoute().copy();
+			time = passengers.get(pass).getTime();
+			//Loop through each station.
+			loopFlag = true;
+			while(loopFlag) {
+				firstStation = routeForSim.pop();
+				System.out.println(firstStation.getName());
+				firstID = stationList.indexOf(firstStation);
+				//Catches if last station.
+				try {
+					secondStation = routeForSim.nextStation();
+					secondID = stationList.indexOf(secondStation);
+				}catch(Exception e) {
+					//Last station no value to write because passenger leaves.
+					loopFlag = false;
+					break;
+				}
+				
+				int roundedWeight = (int) Math.ceil(adjacencyList.get(firstID).get(secondID));
+				
+				//Write values for station.
+				while((time % roundedWeight) != 0){
+					passengerLocations[firstID][time]++; 
+					time++;
+				}
+				
+				//Write values for bus.
+				while(roundedWeight > 0) {
+					passengerLocations[bus][time]++;
+					roundedWeight--;
+					time++;
+				}
+			}
+			
+			
+		}
+		for(int i = 0; i < numberOfStations; i++) {
+			for(int j = 0; j < 1440; j++) {
+				System.out.println(passengerLocations[i][j]);
+			}
+		}
+		return passengerLocations;
+	}
+	
+	public void clearPassengersandStationLists(){
+		stationList = new StationList();
+		passengers = new Passengers();
+	}
+	
 
 	//William's defined methods
 	public boolean hasStationByName(String stationName) {
