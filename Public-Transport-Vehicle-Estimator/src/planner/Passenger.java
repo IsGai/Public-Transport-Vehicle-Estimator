@@ -10,6 +10,7 @@ public class Passenger implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private String name;
 	private Route myRoute;
+	private int startTime;
 	
 	private static int uID = 1000;
 	private int id;
@@ -30,6 +31,13 @@ public class Passenger implements Serializable{
 		this.id = uID+=10;
 		//myRoute = bestpath
 	}
+	
+	public int getTime() {
+		return this.startTime;
+	}
+	public void setTime(int time) {
+		this.startTime = time;
+	}	
 	
 	public String getName() {
 		return this.name;
