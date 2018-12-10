@@ -27,16 +27,16 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		new BusPlannerGUI();
 	}
 
-	// GUI related
-	static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
-	private Dimension guiSize = new Dimension();
-	private Point guiLocation = new Point();
-
+	//GUI LoginScreen size
+	private static int LOGINSCREEN_WIDTH = 500;
+	private static int LOGINSCREEN_HEIGHT = 500;
+	
 	// LoginScreen Components
 	private JPanel buttonsPanel = new JPanel();
 	private JButton userButton = new JButton("Passenger");
 	private JButton adminButton = new JButton("Admin");
 
+	//User Login Screen
 	private JPanel userPanel = new JPanel();
 	private JPanel idPanel = new JPanel();
 	private JLabel idLabel = new JLabel("ID: ");
@@ -45,6 +45,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	private JLabel nameLabel = new JLabel("Name: ");
 	private JTextField nameTextField = new JTextField(20);
 
+	//Admin Login Screen
 	private JPanel adminPanel = new JPanel();
 	private JPanel usernamePanel = new JPanel();
 	private JLabel usernameLabel = new JLabel("Username: ");
@@ -53,48 +54,38 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	private JLabel passwordLabel = new JLabel("Password: ");
 	private JTextField passwordTextField = new JTextField(20);
 
+	//Part of User Login Screen
 	private JPanel loginPanel = new JPanel();
 	private JButton loginButton = new JButton("Login");
 	private JButton addUserButton = new JButton("New User");
 	private JButton remUserButton = new JButton("Remove User");
 
 	// other variables
-	// reserved: program automatically loads from Passengers.dat
 	private GraphOfStations gos;
-	private String fileName = "";
 
 	// with default MAP and PASSENGERS
 	public BusPlannerGUI() {
 		gos = new GraphOfStations(); // default
-		fileName = gos.getFileName();
-		busPlannerGUI();
-	}
-
-	// with predefined MAP and PAASSENGERS
-	public BusPlannerGUI(GraphOfStations gos) {
-		this.gos = gos;
-		fileName = gos.getFileName();
 		busPlannerGUI();
 	}
 	
+	//When loaded MAP and PASSENGERS
 	public BusPlannerGUI(GraphOfStations gos, Passengers<Passenger> passengers) {
 		this.gos = gos;
 		gos.setPassengers(passengers);
-		fileName = gos.getFileName();
 		busPlannerGUI();
 	}
 
+	//GUI setup
 	public void busPlannerGUI() {
 		this.setTitle("Bus Planner");
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
-		guiSize.width = (int) 500;// (SCREEN_SIZE.width / 1.7);
-		guiSize.height = (int) 500;// (SCREEN_SIZE.height / 1.7);
-		this.setSize(guiSize.width, guiSize.height);
-		guiLocation.x = SCREEN_SIZE.width / 2 - guiSize.width / 2;
-		guiLocation.y = SCREEN_SIZE.height / 2 - guiSize.height / 2;
-		this.setLocation(guiLocation.x, guiLocation.y);
+		//GUI Sizing and Locationing
+		this.setSize(LOGINSCREEN_WIDTH, LOGINSCREEN_HEIGHT);
+		this.setLocationRelativeTo(null);
 
+		//GUI setup and intialization
 		panelSetups();
 		GUIComponents();
 		addComponents();
@@ -105,6 +96,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	//Setup all of the panels
 	public void panelSetups() {
 		buttonsPanel.add(userButton);
 		buttonsPanel.add(adminButton);
@@ -113,6 +105,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		loginPanelSetup();
 	}
 
+	//User Login Screen Setup
 	public void userPanelSetup() {
 		idPanel.add(idLabel);
 		idPanel.add(idTextField);
@@ -121,6 +114,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		panelSetup(userPanel, idPanel, namePanel);
 	}
 
+	//Admin Login Screen Setup
 	public void adminPanelSetup() {
 		usernamePanel.add(usernameLabel);
 		usernamePanel.add(usernameTextField);
@@ -129,18 +123,26 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		panelSetup(adminPanel, usernamePanel, passwordPanel);
 	}
 
+	/**
+	 * Used to setup both User/Admin Login Screens
+	 * @param panel - the User/Admin panel
+	 * @param panel1 - first panel to add
+	 * @param panel2 - second panel to add
+	 */
 	public void panelSetup(JPanel panel, JPanel panel1, JPanel panel2) {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(panel1);
 		panel.add(panel2);
 	}
 
+	//User Login Screen
 	public void loginPanelSetup() {
 		loginPanel.add(loginButton);
 		loginPanel.add(addUserButton);
 		loginPanel.add(remUserButton);
 	}
 
+	//default settings, and setting action listeners for components
 	public void GUIComponents() {
 		userButton.setEnabled(false);
 		userButton.addActionListener(this);
@@ -150,16 +152,26 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		remUserButton.addActionListener(this);
 	}
 
+	//Adds the three major panels to the GUI
 	public void addComponents() {
 		this.add(buttonsPanel);
 		this.add(userPanel);
 		this.add(loginPanel);
 	}
 
-	public void changeScreenTo(JPanel screen) {
+	/**
+	 * Swtiches between User/Admin login screens
+	 * @param screen - the screen to switch to (User/Admin)
+	 */
+	public void changeScreenTo(JPanel screen, boolean goingToAdminScreen) {
 		this.getContentPane().removeAll();
 		this.repaint();
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
+		
+		adminButton.setEnabled(goingToAdminScreen);
+		userButton.setEnabled(!goingToAdminScreen);
+		addUserButton.setVisible(goingToAdminScreen);
+		remUserButton.setVisible(goingToAdminScreen);
 
 		this.add(buttonsPanel);
 		this.add(screen);
@@ -168,6 +180,10 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		this.validate();
 	}
 
+	/**
+	 * Validate that username/password matche those in the Admin.dat
+	 * @return true - if Admin.dat username/passwords match what's on the textFields
+	 */
 	public boolean validateAdmin() {
 		String[] admin = readAdmin("src/Data/Admin.dat");
 		if (!usernameTextField.getText().equals(admin[0])) {
@@ -179,13 +195,18 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		return true;
 	}
 
-	public String[] readAdmin(String filePath) {// has to be changed according to data structures
+	/**
+	 * 
+	 * @param filePath - relative path to Admin.data
+	 * @return String[0] = username, String[1] = password
+	 */
+	public String[] readAdmin(String filePath) {
 		String username = "";
 		String password = "";
 		try {
 			ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath));
 			try {
-				Object temp = inputStream.readObject(); // for security measures, is not used
+				Object temp = inputStream.readObject(); // for security measures only, is not used
 				username = inputStream.readUTF(); // = "username"
 				password = inputStream.readUTF(); // = "password"
 			} catch (ClassNotFoundException e) {
@@ -198,6 +219,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		return new String[] { username, password };
 	}
 
+	//JOptionPane popup message dialogue
 	public void outputMessage(String message, String title, int messageType) {
 		JOptionPane.showMessageDialog(this, message, title, messageType);
 	}
@@ -206,37 +228,31 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		JButton temp = (JButton) e.getSource();
 		if (temp == userButton) {
-			adminButton.setEnabled(true);
-			userButton.setEnabled(false);
-			addUserButton.setVisible(true);
-			remUserButton.setVisible(true);
-			changeScreenTo(userPanel);
+			changeScreenTo(userPanel, true);
 		}
 		if (temp == adminButton) {
-			userButton.setEnabled(true);
-			adminButton.setEnabled(false);
-			addUserButton.setVisible(false);
-			remUserButton.setVisible(false);
-			changeScreenTo(adminPanel);
+			changeScreenTo(adminPanel, false);
 		}
 		if (temp == addUserButton) {
 			String name = JOptionPane.showInputDialog("Enter in your name.");
-			if (name.length() > 0) {
-				Passenger p = new Passenger(name);
-				gos.addPassenger(p);
+			//Triple checks that something was entered
+			if (name!=null && name.trim().length() > 0 && name.length() > 0) {
+				Passenger p = new Passenger(name); //create the passenger, generated ID
+				gos.addPassenger(p); //adds passenger via GraphOfStations, automatically exports to appropriate Passengers data file
 				outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
 						+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
+			}else {
+				outputMessage("You did not enter in anything", "Error Message", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		if (temp == remUserButton) {
 			String id = JOptionPane.showInputDialog("Verify ID.");
 			String name = JOptionPane.showInputDialog("Verify name.");
 			try {
-				boolean removed = gos.getPassengers().removePassenger(Integer.parseInt(id), name);
-				if (removed) {
+				//display successful removal message if such a passenger exist
+				if (gos.removePassenger(Integer.parseInt(id), name)) {
 					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
 							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
-					gos.getPassengers().exportPassengers(fileName);
 				} else
 					outputMessage("Passenger[ID:" + id + ", Name:" + name
 							+ "] could not be found.\nPlease make sure you've entered in the correct information.",
@@ -256,13 +272,16 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 					id = Integer.parseInt(idTextField.getText());
 					Passenger currentPassenger = gos.getPassengers().getPassenger(id, name); // search for passenger
 					if (currentPassenger != null) {
+						//Passenger is found, go to userScreen
 						new UserScreen(currentPassenger, gos);
 						this.dispose();
 					} else {
+						//Passenger not found, display error message
 						outputMessage("Could not find passenger with information.\nPassenger[ID:" + id + ", Name:"
 								+ name + "]", "Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
 					}
 				} catch (NumberFormatException nfe) {
+					//ID input was not in number format
 					outputMessage("Make sure ID textfield is only numbers.\nie: \"1000\".", "Invalid ID Format",
 							JOptionPane.ERROR_MESSAGE);
 				}

@@ -21,12 +21,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 
 import collections.GraphOfStations;
 import planner.Route;
 import planner.Station;
 
-public class Map extends JPanel implements MouseListener , MouseMotionListener{
+public class Map extends JPanel implements MouseListener, MouseMotionListener {
 	private Line lineTemp;
 	private Oval ovalTemp;
 	private ArrayList<Oval> ovals = new ArrayList<Oval>();
@@ -48,11 +49,16 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 	//
 	private boolean hoveringOval = false;
 	private Oval hoveredOval;
+	
+	private JSlider ts;
+	private int[][] pl;
 
-	public Map(boolean restricted, GraphOfStations gos) {
+	public Map(boolean restricted, GraphOfStations gos, JSlider timeSlider, int[][] passengerLocations) {
 		this.setBackground(Color.white);
 		this.setForeground(null);
 		this.gos = gos;
+		this.ts = timeSlider;
+		this.pl =  passengerLocations;
 		this.updateMap();
 		this.setPreferredSize(new Dimension(1000, 1000));
 
@@ -98,9 +104,9 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 				g.drawString(o.getName(), o.getX(), o.getY());
 				g.setColor(Color.black);
 			}
-		if(hoveringOval)
+		if (hoveringOval)
 			showStationData(g);
-		else this.setCursor(null);
+		// else this.setCursor(null);
 		repaint();
 	}
 
@@ -120,8 +126,16 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 	}
 
 	public void drawMyRoute(Graphics2D g) {
-		// System.out.println("drawBestRoute");
 		g.setColor(Color.yellow);
+		boolean drawStart = true;
+		for(Oval o: routeMyOvals) {
+			if(o!=null) {
+				if(drawStart) {
+					g.fillOval(o.getX(), o.getY(), o.getD(), o.getD());
+					drawStart = false;
+				}
+			}
+		}
 		for (Line rl : routeMyLines) // constantly draw routes
 			if (rl != null) {
 				g.setStroke(new BasicStroke(3));
@@ -130,24 +144,30 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 		g.setColor(Color.black);
 	}
 	
+	public int getPassengerCount(int StationId){
+		int time = ts.getValue();
+		return this.pl[StationId][time];
+	}
+
 	public void showStationData(Graphics2D g) {
 		int x = hoveredOval.x, y = hoveredOval.y;
-		//draw black-bordered white background rectangle to display data
+		// draw black-bordered white background rectangle to display data
 		g.setColor(Color.white);
 		g.fillRect(x, y, 100, 50);
 		g.setColor(Color.black);
 		g.setStroke(new BasicStroke(1));
 		g.drawRect(x, y, 100, 50);
-		
+
 		g.setFont(new Font("Arial", Font.PLAIN, 12));
 		Station temp = gos.getStationByPoint(hoveredOval.getPoint());
-		g.drawString("Passengers: " + temp.getStationOccupance().size(), x, y+10);
-		
-		//make cursor invisible, remember to make visible
+		g.drawString("StationName: " + temp.getName(), x, y + 10);
+		g.drawString("Passengers : " + getPassengerCount (temp.getStationId()) , x, y + 20);
+
+		// make cursor invisible, remember to make visible
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-		    cursorImg, new Point(0, 0), "blank cursor");
-		this.setCursor(blankCursor);
+		// Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+		// cursorImg, new Point(0, 0), "blank cursor");
+		// this.setCursor(blankCursor);
 	}
 
 	public boolean sameStation(Oval temp) {
@@ -170,12 +190,12 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 				return true;
 		return false;
 	}
-	
+
 	public void removeMyRoute() {
 		drawMyRoute = false;
 	}
 
-	//draw map given the GraphOfStation variables
+	// draw map given the GraphOfStation variables
 	public void updateMap() {
 		// add new stations to ovals
 		ArrayList<Station> stationList = gos.getStationList();
@@ -257,17 +277,20 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
-			Point mousePoint = e.getPoint();
+			Point mousePoint = e.getPoint(); // get mousePoint
+			// adjust mousePoint to shift up-left on Map
 			mousePoint.x = mousePoint.x - STATION_DIAMETER / 2;
 			mousePoint.y = mousePoint.y - STATION_DIAMETER / 2;
-			Oval tempOval = new Oval(mousePoint, STATION_DIAMETER, true);
-			ovals.add(tempOval);
-			String stationName = JOptionPane.showInputDialog("Enter in station name");
-			if (stationName != null) {
-				tempOval.setName(stationName);
-				gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
-			} else
-				ovals.remove(tempOval);
+			if (!clickedOnStation(e.getPoint())) {
+				Oval tempOval = new Oval(mousePoint, STATION_DIAMETER, true);
+				ovals.add(tempOval);
+				String stationName = JOptionPane.showInputDialog("Enter in station name");
+				if (stationName != null) {
+					tempOval.setName(stationName);
+					gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
+				} else
+					ovals.remove(tempOval);
+			}
 		}
 	}
 
@@ -324,16 +347,16 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		Point cursor = e.getPoint();
-		if(clickedOnStation(cursor)) {
+		if (clickedOnStation(cursor)) {
 			hoveredOval = getClickedStation(cursor);
 			hoveringOval = true;
-		}
-		else hoveringOval = false;
+		} else
+			hoveringOval = false;
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		
+
 	}
 
 	@Override
@@ -388,7 +411,7 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 		}
 
 		public int getXMax() {
-			return x + d - 8;
+			return x + d;
 		}
 
 		public int getYMin() {
@@ -396,7 +419,7 @@ public class Map extends JPanel implements MouseListener , MouseMotionListener{
 		}
 
 		public int getYMax() {
-			return y + d - 8;
+			return y + d;
 		}
 
 		public int getX() {

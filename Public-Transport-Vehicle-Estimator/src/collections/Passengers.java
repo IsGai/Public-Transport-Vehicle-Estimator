@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import planner.Passenger;
 import planner.Route;
+import planner.Station;
 
 public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
@@ -36,12 +37,14 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 		return null;
 	}
 	public boolean removePassenger(int id, String name) {
-		for (T p : this)
-			if (p != null)
-				if (((Passenger) p).getName().equalsIgnoreCase(name) && ((Passenger) p).getId() == id) {
+		for (T t : this)
+			if (t != null) {
+				Passenger p = ((Passenger) t);
+				if (p.getName().equalsIgnoreCase(name) && p.getId() == id) {
 					this.remove(p);
 					return true;
 				}
+			}
 		return false;
 	}
 

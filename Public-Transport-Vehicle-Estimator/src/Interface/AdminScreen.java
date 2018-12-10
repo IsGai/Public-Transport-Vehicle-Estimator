@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.border.TitledBorder;
 
 public class AdminScreen extends JFrame implements ActionListener {
@@ -41,20 +42,23 @@ public class AdminScreen extends JFrame implements ActionListener {
 	private JPanel passengerPanel = new JPanel();
 	private JButton addPassengerButton = new JButton("Add Passenger");
 	private JButton removePassengerButton = new JButton("Remove Passenger");
-	private JPanel stationPanel = new JPanel();
+	private JPanel stationRoutePanel = new JPanel();
 	private JButton addStationButton = new JButton("Add Station");
-	private JButton removeStationButton = new JButton("Remove Station");
-	private JPanel routePanel = new JPanel();
 	private JButton addRouteButton = new JButton("Add Route ");
-	private JButton removeRouteButton = new JButton("Remove Route ");
+
 	private JButton saveMapButton = new JButton("Save Map");
 	private JButton loadMapButton = new JButton("Load Map");
 	private JButton clearMapButton = new JButton("Clear Map");
-	
+
 	private JPanel passengersPanel = new JPanel();
 	private JComboBox<String> passengersComboBox = new JComboBox<String>();// change <String> to <Route>
 	private JLabel passengersLabel = new JLabel("Passengers:");
 	
+	//time
+	private JPanel timePanel = new JPanel();
+	private JSlider timeSlider = new JSlider(0,1439,1);
+	private JLabel timeLabel = new JLabel("Time: ");
+
 	private JButton backButton = new JButton("Return to Login Screen");
 	// addbuttons to show all passengers
 	// do everything else userscreen can do
@@ -65,6 +69,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 	private Map map = null;
 	private String mapFileName;
 	private TitledBorder titledBorder;
+	private int[][] passengerLocations;
 
 	public AdminScreen(GraphOfStations gos) {
 		this.setTitle("Admin Screen");
@@ -91,14 +96,12 @@ public class AdminScreen extends JFrame implements ActionListener {
 
 	public void initialSetup(GraphOfStations gos) {
 		this.gos = gos;
-		map = new Map(false, gos);
 		mapFileName = gos.getFileName();
-		
+		passengerLocations = gos.simulatePlacements();
+		map = new Map(false, gos, timeSlider, passengerLocations);
+
 		// BUTTONS YET TO BE IMPLEMENTED
-		removeStationButton.setEnabled(false);
-		//addPassengerButton.setEnabled(false);
-		//removePassengerButton.setEnabled(true);
-		removeRouteButton.setEnabled(false);
+
 	}
 
 	public JPanel centerToGrid(Component c) {
@@ -106,19 +109,23 @@ public class AdminScreen extends JFrame implements ActionListener {
 		temp.add(c);
 		return temp;
 	}
+	
+	public void timePanel() {
+		timePanel.add(timeSlider);
+		timePanel.add(timeLabel);
+	}
 
 	public void leftPanel() {
 		passengerPanel();
-		stationPanel();
-		routePanel();
+		stationRoutePanel();
 		passengersPanel();
+		timePanel();
 		leftPanel.setLayout(new BorderLayout());
 
 		JPanel tempPanel = new JPanel();
 		tempPanel.setLayout(new BoxLayout(tempPanel, BoxLayout.Y_AXIS));
 		tempPanel.add(passengerPanel);
-		tempPanel.add(stationPanel);
-		tempPanel.add(routePanel);
+		tempPanel.add(stationRoutePanel);
 
 		JPanel saveMapPanel = new JPanel(new GridLayout(1, 2));
 		saveMapPanel.add(centerToGrid(saveMapButton));
@@ -126,6 +133,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 		tempPanel.add(saveMapPanel);
 		tempPanel.add(clearMapButton);
 		tempPanel.add(passengersPanel);
+		tempPanel.add(timePanel);
 
 		leftPanel.add(tempPanel, BorderLayout.NORTH);
 		leftPanel.add(backButton, BorderLayout.SOUTH);
@@ -134,7 +142,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 		loadMapButton.addActionListener(this);
 		clearMapButton.addActionListener(this);
 	}
-	
+
 	public void passengersComboBox() {
 		Passengers<Passenger> passengerList = gos.getPassengers();
 		String[] passengerNames = new String[passengerList.size()];
@@ -142,16 +150,17 @@ public class AdminScreen extends JFrame implements ActionListener {
 		for (int x = 0; x < passengerList.size(); x++)
 			if (passengerList.get(x) != null)
 				passengerNames[x] = "[" + passengerList.get(x).getId() + "] " + passengerList.get(x).getName();
-		for(int x=0;x<passengerNames.length;x++)
-			for(int y=0;y<passengerNames.length-1;y++)
-				if(passengerNames[y].compareTo(passengerNames[y+1]) > 0) {
+		for (int x = 0; x < passengerNames.length; x++)
+			for (int y = 0; y < passengerNames.length - 1; y++)
+				if (passengerNames[y].compareTo(passengerNames[y + 1]) > 0) {
 					String temp = passengerNames[y];
-					passengerNames[y] = passengerNames[y+1];
-					passengerNames[y+1] = temp;
+					passengerNames[y] = passengerNames[y + 1];
+					passengerNames[y + 1] = temp;
 				}
-		
+
 		passengersComboBox.setModel(new DefaultComboBoxModel(passengerNames));
 	}
+
 	public void passengersPanel() {
 		passengersComboBox();
 		passengersComboBox.addActionListener(this);
@@ -168,20 +177,11 @@ public class AdminScreen extends JFrame implements ActionListener {
 		passengerPanel.add(centerToGrid(removePassengerButton));
 	}
 
-	public void stationPanel() {
+	public void stationRoutePanel() {
 		addStationButton.addActionListener(this);
-		removeStationButton.addActionListener(this);
-		stationPanel.setLayout(new GridLayout(1, 2));
-		stationPanel.add(centerToGrid(addStationButton));
-		stationPanel.add(centerToGrid(removeStationButton));
-	}
-
-	public void routePanel() {
-		addRouteButton.addActionListener(this);
-		removeRouteButton.addActionListener(this);
-		routePanel.setLayout(new GridLayout(1, 2));
-		routePanel.add(centerToGrid(addRouteButton));
-		routePanel.add(centerToGrid(removeRouteButton));
+		stationRoutePanel.setLayout(new GridLayout(1, 2));
+		stationRoutePanel.add(centerToGrid(addStationButton));
+		stationRoutePanel.add(centerToGrid(addRouteButton));
 	}
 
 	public void rightPanel() {
@@ -197,7 +197,7 @@ public class AdminScreen extends JFrame implements ActionListener {
 	public void addScrollPane(JPanel panel, JPanel panel2, String title) {
 		JScrollPane temp = new JScrollPane(panel2, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		titledBorder =  BorderFactory.createTitledBorder(title);
+		titledBorder = BorderFactory.createTitledBorder(title);
 		panel.setBorder(titledBorder);
 		panel.setBackground(null);
 		panel.add(temp);
@@ -233,6 +233,11 @@ public class AdminScreen extends JFrame implements ActionListener {
 	public String getMapFileName() {
 		return this.mapFileName;
 	}
+	
+	public int getPassengerCount(int StationId){
+		int time = timeSlider.getValue();
+		return this.passengerLocations[StationId][time];
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -243,19 +248,19 @@ public class AdminScreen extends JFrame implements ActionListener {
 			outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
 					+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
 			gos.getPassengers().exportPassengers(gos.getFileName());
-			passengersComboBox(); //update passenger combo box
+			passengersComboBox(); // update passenger combo box
 		}
 		if (e.getSource() == removePassengerButton) {
 			String id = JOptionPane.showInputDialog("Verify ID.");
 			String name = JOptionPane.showInputDialog("Verify name.");
 			try {
-				boolean removed = gos.getPassengers().removePassenger(Integer.parseInt(id), name);
+				boolean removed = gos.removePassenger(Integer.parseInt(id), name);
 				if (removed) {
 					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
 							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
-					gos.getPassengers().exportPassengers(gos.getFileName());
-					passengersComboBox(); //update passenger combo box
-				}else
+					passengersComboBox(); // update passenger combo box
+					map.removeMyRoute();
+				} else
 					outputMessage("Passenger[ID:" + id + ", Name:" + name
 							+ "] could not be found.\nPlease make sure you've entered in the correct information.",
 							"Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
@@ -274,14 +279,14 @@ public class AdminScreen extends JFrame implements ActionListener {
 			} while (stationY == -1);
 			String stationN = getInput("Enter in NAME for station");
 			// add input validation for stationX/stationY
-			Station s = new Station(stationN, new Point(stationX, stationY));
-			gos.addStation(s);
-			map.updateMap();
-		}
-		if (e.getSource() == removeStationButton) {
-			// does not work yet
-			outputMessage("Does not work yet, may conflict with\nhow collections are programed", "Not yet implemented",
-					JOptionPane.PLAIN_MESSAGE);
+			Point stationCoord = new Point(stationX, stationY);
+			if (map.clickedOnStation(stationCoord)) {
+				outputMessage("There is already a station there!", "Error Message", JOptionPane.ERROR_MESSAGE);
+			} else {
+				Station s = new Station(stationN, new Point(stationX, stationY));
+				gos.addStation(s);
+				map.updateMap();
+			}
 		}
 		if (e.getSource() == addRouteButton) {
 			String station1 = getInput("Enter in name of station one");
@@ -296,9 +301,6 @@ public class AdminScreen extends JFrame implements ActionListener {
 				gos.addEdge(startStation, endStation);
 				map.updateMap();
 			}
-		}
-		if (e.getSource() == removeRouteButton) {
-			outputMessage("Not yet implemented", "Not yet implemented", JOptionPane.PLAIN_MESSAGE);
 		}
 		if (e.getSource() == saveMapButton) {
 			int choice = JOptionPane.showConfirmDialog(this, "Save to default(Default.map)?",
@@ -323,13 +325,14 @@ public class AdminScreen extends JFrame implements ActionListener {
 			int option = jfl.showOpenDialog(this); // open JFileChooser
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (gos.loadGOS(jfl.getSelectedFile().getPath())) {
-					mapFileName = jfl.getSelectedFile().getName().substring(0, jfl.getSelectedFile().getName().length()-4);
+					mapFileName = jfl.getSelectedFile().getName().substring(0,
+							jfl.getSelectedFile().getName().length() - 4);
 					String passengerFilePath = jfl.getSelectedFile().getPath().toString().substring(0,
 							jfl.getSelectedFile().getPath().toString().length() - 4) + ".pas";
 					gos.getPassengers().importPassengers(passengerFilePath);
 					changeMapTitle(mapFileName);
 					gos.setFileName(mapFileName);
-					passengersComboBox(); //update passenger combo box
+					passengersComboBox(); // update passenger combo box
 					map.updateMap();
 				} else {
 					outputMessage("Could not load file.\nPlease make sure you selected a \".map\" file.",
@@ -344,18 +347,19 @@ public class AdminScreen extends JFrame implements ActionListener {
 			if (choice == JOptionPane.YES_OPTION) {
 				gos.clearGOS();
 				map.updateMap();
+				passengersComboBox();
 			}
 			if (choice == JOptionPane.NO_OPTION) {
 
 			}
 		}
-		if(e.getSource() == passengersComboBox) {
+		if (e.getSource() == passengersComboBox) {
 			String selectedItem = passengersComboBox.getSelectedItem().toString();
 			int id = Integer.parseInt(selectedItem.substring(1, selectedItem.lastIndexOf("]")));
 			String name = selectedItem.substring(selectedItem.lastIndexOf("] ") + 2, selectedItem.length());
-			//System.out.println(id + "" + name);
-			Passenger p = gos.getPassengers().getPassenger(id , name);
-			if(p.getRoute()!=null) 
+
+			Passenger p = gos.getPassengers().getPassenger(id, name);
+			if (p.getRoute() != null)
 				map.updateMap(p.getRoute().copy(), true);
 		}
 		if (e.getSource() == backButton) {

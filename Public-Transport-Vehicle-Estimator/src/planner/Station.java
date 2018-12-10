@@ -2,6 +2,7 @@ package planner;
 
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import collections.ArrayQueue;
 
@@ -17,6 +18,7 @@ public class Station implements Serializable{
 	
 	
 	private ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
+	private ArrayList<Passenger> passengers = new ArrayList<Passenger>();
 	
 	public Station(String name, Point vertexCoordinate){
 		this.name = name;
@@ -55,5 +57,15 @@ public class Station implements Serializable{
 	
 	public ArrayQueue<Passenger> getStationOccupance(){
 		return this.stationOccupance;
+	}
+	
+	public void passengerAdd(Passenger passenger) {
+		this.passengers.add(passenger);
+	}
+	public void passengerRemove(Passenger passenger) {
+		this.passengers.remove(passenger);
+	}
+	public ArrayList<Passenger> getPassengers(){
+		return this.passengers;
 	}
 }
