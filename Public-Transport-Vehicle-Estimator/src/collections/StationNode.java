@@ -1,4 +1,10 @@
+/*
+ * Class description: Node used for easier Djikstra's calculation in
+ * GraphOfStations class.
+ */
+
 package collections;
+
 
 public class StationNode implements Comparable<StationNode> {
 	int Station;

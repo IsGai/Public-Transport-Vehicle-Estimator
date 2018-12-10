@@ -1,45 +1,16 @@
-
+/*
+ * Class description: Implementation of ArrayQueue data structure that 
+ * implements Cloneable and Serializable.
+ */
 package collections;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 
-/******************************************************************************
- * An <CODE>ArrayQueue&lt;E&gt;</CODE> is a queue of references to E objects.
- *
- * <b>Limitations:</b>
- * 
- * (1) The capacity of one of these queues can change after it's created, but
- * the maximum capacity is limited by the amount of free memory on the machine.
- * The constructor, <CODE>add</CODE>, <CODE>clone</CODE>, and <CODE>union</CODE>
- * will result in an <CODE>OutOfMemoryError</CODE> when free memory is
- * exhausted.
- * 
- * (2) A queue's capacity cannot exceed the maximum integer 2,147,483,647
- * (<CODE>Integer.MAX_VALUE</CODE>). Any attempt to create a larger capacity
- * results in a failure due to an arithmetic overflow.
- *
- * <b>Java Source Code for this class:</b>
- * <A HREF="../../../../edu/colorado/collections/ArrayQueue.java">
- * http://www.cs.colorado.edu/~main/edu/colorado/collections/ArrayQueue.java
- * </A>
- *
- * @author Michael Main <A HREF="mailto:main@colorado.edu"> (main@colorado.edu)
- *         </A>
- * 
- *         peek method added by Isaac Gaiovnik
- * @version Feb 10, 2016
- *
- * @see LinkedQueue
- ******************************************************************************/
+
 public class ArrayQueue<E> implements Cloneable, Serializable {
 	private static final long serialVersionUID = 1L;
-// Invariant of the ArrayQueue<E> class:
-//   1. The number of items in the queue is in the instance variable manyItems.
-//   2. For a non-empty queue, the items are stored in a circular array
-//      beginning at data[front] and continuing through data[rear].
-//   3. For an empty queue, manyItems is zero and data is a reference to an
-//      array, but we don't care about front and rear.
+
 
 	private E[] data;
 	private int quantity;
