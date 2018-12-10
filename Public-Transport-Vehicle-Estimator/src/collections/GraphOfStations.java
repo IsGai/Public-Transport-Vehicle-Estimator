@@ -197,7 +197,7 @@ public class GraphOfStations implements Serializable{
 		int[][] passengerLocations = new int[numberOfStations + 1][1440];
 		//Initialize all locations and times to 0.
 		for(int i = 0; i < 1440; i++) {
-			for(int j = 0; j < numberOfPassengers; j++) {
+			for(int j = 0; j < numberOfStations + 1; j++) {
 				passengerLocations[j][i] = 0;
 			}
 		}
@@ -248,10 +248,11 @@ public class GraphOfStations implements Serializable{
 			
 			
 		}
-		for(int i = 0; i < numberOfStations; i++) {
+		for(int i = 0; i < numberOfStations+ 1; i++) {
 			for(int j = 0; j < 1440; j++) {
-				System.out.println(passengerLocations[i][j]);
+				System.out.print(passengerLocations[i][j] + " ");
 			}
+			System.out.print("\n");
 		}
 		return passengerLocations;
 	}
