@@ -150,7 +150,18 @@ public class GraphOfStations implements Serializable {
 
 		return sqrt(pow(run, 2) + pow(rise, 2));
 	}
-
+	
+	/*
+	 * Description: Finds the best path between two stations.
+	 * 
+	 * Arguments: start -  ID of first station.
+	*	end- ID of second station.
+	 * 
+	 * Precondition: Stations should have populated instance variables. 
+	 * 
+	 * Postcondition: A Route will be returned with the best path.
+	 *
+	 */
 	public Route bestPath(int start, int end) {
 		// Create structures for algorithm to use.
 		HashMap<Integer, Double> totalCosts = new HashMap<Integer, Double>(stationCount - 1);
@@ -200,7 +211,18 @@ public class GraphOfStations implements Serializable {
 		return bestRoute;
 
 	}
-
+	
+	/*
+	 * Description: Finds the data of when what passengers will be at
+	 *what stations.
+	 * 
+	 * Precondition: There should be stations and passengers but if there
+	 * are not it will not cause an error.
+	 * 
+	 * Postcondition: An 2d array will be returned with the data in the 
+	 * format int[stationID][time]  with int[max stationID + 1][time]
+	* representing those who are on a bus.
+	 */
 	public int[][] simulatePlacements() {
 		int numberOfPassengers = passengers.size();
 		int numberOfStations = stationList.size();
@@ -223,8 +245,6 @@ public class GraphOfStations implements Serializable {
 		int time;
 		boolean loopFlag;
 		for (int pass = 0; pass < numberOfPassengers; pass++) {
-			// System.out.println(passengers.get(pass).getName());
-			// System.out.println(passengers.get(pass).getRoute().nextStation().getName());
 			if (passengers.get(pass).getRoute() != null) {
 				routeForSim = passengers.get(pass).getRoute().copy();
 				time = passengers.get(pass).getTime();
@@ -262,20 +282,10 @@ public class GraphOfStations implements Serializable {
 				}
 			}
 		}
-		/*
-		for (int i = 0; i < numberOfStations + 1; i++) {
-			for (int j = 0; j < 1440; j++) {
-				System.out.print(passengerLocations[i][j] + " ");
-			}
-			System.out.print("\n");
-		}*/
+
 		return passengerLocations;
 	}
 
-	public void clearPassengersandStationLists() {
-		stationList = new StationList();
-		passengers = new Passengers();
-	}
 
 	// William's defined methods
 	public boolean hasStationByName(String stationName) {

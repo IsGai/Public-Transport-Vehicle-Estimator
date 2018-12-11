@@ -21,17 +21,20 @@ public class Passenger implements Serializable{
 		 */
 		Passenger.uID = uID; 
 	}
+	//Constructor with one argument.
 	public Passenger(String name) {
 		this.name = name;
 		this.id = uID+=10;
 		this.myRoute = null;
 	}
+	
+	//Constructor three arguments.
 	public Passenger(String name, Station start, Station end){
 		this.name = name;
 		this.id = uID+=10;
-		//myRoute = bestpath
 	}
 	
+	//Rest of methods are mutators.
 	public int getTime() {
 		return this.startTime;
 	}
