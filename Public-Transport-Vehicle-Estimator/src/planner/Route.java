@@ -68,12 +68,13 @@ public class Route implements Cloneable, Serializable{
 		return route.isEmpty();
 	}
 	
-	//testing purposes
+	//Used in simulation method in GraphOfStations. 
 	public Station pop() { //same as arrived() except returns a station
 		//used in Map.updateMap(station1, station2)
 		return route.pop();
 	}
-	public void tostring() { //testing purposes
+	
+	public void tostring() { 
 		System.out.println("route size:" + route.size());
 		while(route.size()>0) {
 			System.out.println(route.pop().getName());

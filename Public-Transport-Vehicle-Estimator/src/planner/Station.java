@@ -20,6 +20,7 @@ public class Station implements Serializable{
 	private ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
 	private ArrayList<Passenger> passengers = new ArrayList<Passenger>();
 	
+	//Constructor.
 	public Station(String name, Point vertexCoordinate){
 		this.name = name;
 		this.vertexCoordinate = vertexCoordinate;
@@ -28,6 +29,7 @@ public class Station implements Serializable{
 	
 
 
+	//The rest of the methods are mutators.
 	public void addPassenger(Passenger toAdd){
 		stationOccupance.add(toAdd);
 		return;
