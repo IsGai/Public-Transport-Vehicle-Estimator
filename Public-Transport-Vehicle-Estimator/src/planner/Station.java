@@ -9,38 +9,21 @@ import collections.ArrayQueue;
 public class Station implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
-
-	private String name;
-	
+	private String name; //station name
 	private int stationId; //station uid, generated in GraphOfStations
-	
 	private Point vertexCoordinate; //station coordinates
 	
-	
-	private ArrayQueue<Passenger> stationOccupance = new ArrayQueue<Passenger>();
+	//used to keep track of passengers in the station
 	private ArrayList<Passenger> passengers = new ArrayList<Passenger>();
 	
 	//Constructor.
 	public Station(String name, Point vertexCoordinate){
 		this.name = name;
 		this.vertexCoordinate = vertexCoordinate;
-		return;
 	}
 	
-
-
-	//The rest of the methods are mutators.
-	public void addPassenger(Passenger toAdd){
-		stationOccupance.add(toAdd);
-		return;
-	}
-	
-	public Passenger removePassenger(Passenger toRemove) throws Exception{
-		return stationOccupance.remove();
-	}
-	
-
-	
+	//Mutators and Assessors
+	//
 	public int getStationId() {
 		return stationId;
 	}
@@ -57,16 +40,16 @@ public class Station implements Serializable{
 		return vertexCoordinate;
 	}
 	
-	public ArrayQueue<Passenger> getStationOccupance(){
-		return this.stationOccupance;
-	}
-	
+	//Pertain to ArrayList<Passenger> passengers
+	//add passenger to the ArrayList
 	public void passengerAdd(Passenger passenger) {
 		this.passengers.add(passenger);
 	}
+	//remove passenger from the ArrayList
 	public void passengerRemove(Passenger passenger) {
 		this.passengers.remove(passenger);
 	}
+	//@return - passengers
 	public ArrayList<Passenger> getPassengers(){
 		return this.passengers;
 	}

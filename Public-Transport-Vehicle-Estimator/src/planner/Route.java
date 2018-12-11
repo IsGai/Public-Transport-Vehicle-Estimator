@@ -74,20 +74,21 @@ public class Route implements Cloneable, Serializable{
 		return route.pop();
 	}
 	
-	public void tostring() { 
-		System.out.println("route size:" + route.size());
-		while(route.size()>0) {
-			System.out.println(route.pop().getName());
+	/**
+	 * Used to read stations from a Passengers myRoute
+	 * @return a copy of Route
+	 */
+	public Route copy() {
+		try {
+			Route copy = (Route)super.clone();
+			copy.route = this.route.clone();
+			return copy;
+		}catch(CloneNotSupportedException e) {
+			return null;
 		}
 	}
-	public Route copy() {
-		Route copy = null;
-		try {
-			copy = (Route)super.clone();
-			copy.route = this.route.clone();
-		}catch(CloneNotSupportedException e) {
-			
-		}
-		return copy;
+	
+	public int size() {
+		return route.size();
 	}
 }

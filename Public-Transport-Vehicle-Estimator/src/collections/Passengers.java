@@ -13,29 +13,50 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import planner.Passenger;
-import planner.Route;
-import planner.Station;
-
 public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
-	private int uID = 1000;
+	private int uID = 1000; // default uID for Passenger
+
+	//default constructor, uID = 1000
 	public Passengers() {
-		new Passenger(uID);
-	}
-	public Passengers(String fileName) {
-		importPassengers("" + fileName + ".pas"); //default loads from
-		new Passenger(uID);
+		new Passenger(uID);// sets static uID on Passenger to default 1000
 	}
 
+	//Preloaded constructor, uID = uID from "fileName".pas file
+	public Passengers(String fileName) {
+		importPassengers("" + fileName + ".pas"); // default loads from
+		new Passenger(uID); // sets uID according to the uID imported previously
+	}
+
+	/**
+	 * Returns null if no passenger with matching params, else return matching
+	 * passenger
+	 * 
+	 * @param id
+	 *            - passenger id
+	 * @param name
+	 *            - passenger name
+	 * @return Passenger with matching id and name
+	 */
 	public Passenger getPassenger(int id, String name) {
-		for(T t: this) {
-			Passenger p = ((Passenger)t);
-			if(p!=null)
-				if(p.getId() == id && p.getName().equalsIgnoreCase(name))
+		for (T t : this) {
+			Passenger p = ((Passenger) t);
+			if (p != null)
+				if (p.getId() == id && p.getName().equalsIgnoreCase(name))
 					return p;
 		}
 		return null;
 	}
+
+	/**
+	 * Remove passenger from Passengers
+	 * 
+	 * @param id
+	 *            - passenger id
+	 * @param name
+	 *            - passenger name
+	 * @return true if passenger successfully removed
+	 */
 	public boolean removePassenger(int id, String name) {
 		for (T t : this)
 			if (t != null) {
@@ -48,6 +69,12 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 		return false;
 	}
 
+	/**
+	 * Read passengers data from a "".pass file, completely clear current passengers
+	 * and addAll passengers from "".pas
+	 * @param filePath
+	 *            - path to a "".pas file
+	 */
 	public void importPassengers(String filePath) {// has to be changed according to data structures
 		Passengers<T> p = null;
 		int uID = 1000;
@@ -68,6 +95,10 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 		this.addAll(p);
 	}
 
+	/**
+	 * Save Passengers data to a "".pas file
+	 * @param fileName - fileName for "".pas
+	 */
 	public void exportPassengers(String fileName) {
 		try {
 			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("" + fileName + ".pas"));
@@ -77,10 +108,5 @@ public class Passengers<T> extends ArrayList<T> implements Serializable, Cloneab
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	public Passengers<T> copy() {
-		Passengers copy = null;
-		copy = (Passengers<T>)super.clone();
-		return copy;
 	}
 }

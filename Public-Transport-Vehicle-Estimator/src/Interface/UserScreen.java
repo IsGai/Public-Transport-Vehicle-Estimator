@@ -41,35 +41,38 @@ public class UserScreen extends JFrame implements ActionListener {
 	private JTextField idTextField = new JTextField(10);
 	private JLabel nameLabel = new JLabel("Name:");
 	private JTextField nameTextField = new JTextField(10);
-	
-	//
+
+	// stationPanel - conatains the two ComboBoxes for departing/destination
+	// stations
 	private JPanel stationPanel = new JPanel();
 	private JLabel departureLabel = new JLabel("Departure:");
-	private JComboBox<String> departureComboBox;//Station names
+	private JComboBox<String> departureComboBox;// Station names
 	private JLabel destinationLabel = new JLabel("Destination:");
-	private JComboBox<String> destinationComboBox;//Station names
-	
-	//Panel for users to select save/remove/save their routes
+	private JComboBox<String> destinationComboBox;// Station names
+
+	// Panel for users to select save/remove/save their routes
 	private JPanel routePanel = new JPanel();
 	private JButton saveRouteButton = new JButton("Save Route");
 	private JButton removeRouteButton = new JButton("Remove Route");
 	private JButton showRouteButton = new JButton("Show My Route");
-	
-	//Panel on the bottom of the left side
+
+	// Panel on the bottom of the left side
 	private JPanel removePanel = new JPanel();
 	private JButton removeButton = new JButton("Remove Trip/Passenger");
 	private JButton backButton = new JButton("Return to Login Screen");
-	
-	//Simulation Panel
+
+	// Simulation Panel
 	private JPanel timePanel = new JPanel();
 	private JComboBox<String> timeComboBox;
 	private JButton timeButton = new JButton("Save time");
 
-	private JPanel rightPanel = new JPanel(); //holds the Map
+	// rightPanel - contains Map
+	private JPanel rightPanel = new JPanel(); // holds the Map
 	private Map map;
-	
+
+	// Miscellaneous variables
 	private GraphOfStations gos;
-	private Passenger passenger; //the current passenger being worked on
+	private Passenger passenger; // the current passenger being worked on
 
 	public UserScreen(Passenger passenger, GraphOfStations gos) {
 		this.setTitle("Passenger Screen");
@@ -91,15 +94,19 @@ public class UserScreen extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	// initial setup, shows Passenger info on top two textfields
 	public void initialSetup(Passenger passenger, GraphOfStations gos) {
 		this.passenger = passenger;
-		idTextField.setText(passenger.getId() + "");
-		idTextField.setEditable(false);
-		nameTextField.setText(passenger.getName());
-		nameTextField.setEditable(false);
+		setPassengerText(idTextField, passenger.getId() + "");
+		setPassengerText(nameTextField, passenger.getName());
 
 		this.gos = gos;
 		this.map = new Map(true, gos, null, null);
+	}
+
+	private void setPassengerText(JTextField textField, String text) {
+		textField.setText(text);
+		textField.setEditable(false);
 	}
 
 	public void leftPanel() {
@@ -115,8 +122,9 @@ public class UserScreen extends JFrame implements ActionListener {
 		tempPanel.add(stationPanel);
 		tempPanel.add(routePanel);
 		tempPanel.add(timePanel);
-		
+
 		leftPanel.add(tempPanel, BorderLayout.NORTH);
+		// keeps the center blank
 		leftPanel.add(removePanel, BorderLayout.SOUTH);
 	}
 
@@ -131,17 +139,20 @@ public class UserScreen extends JFrame implements ActionListener {
 	public void stationPanel() {
 		ArrayList<Station> stationList = gos.getStationList();
 		String[] stationNames = new String[stationList.size()];
+		// populate StationNames
 		for (int x = 0; x < stationList.size(); x++)
 			if (stationList.get(x) != null)
 				stationNames[x] = stationList.get(x).getName();
-		for(int x=0;x<stationNames.length;x++)
-			for(int y=0;y<stationNames.length-1;y++)
-				if(stationNames[y].compareTo(stationNames[y+1]) > 0) {
+		// sort the names
+		for (int x = 0; x < stationNames.length; x++)
+			for (int y = 0; y < stationNames.length - 1; y++)
+				if (stationNames[y].compareTo(stationNames[y + 1]) > 0) {
 					String temp = stationNames[y];
-					stationNames[y] = stationNames[y+1];
-					stationNames[y+1] = temp;
+					stationNames[y] = stationNames[y + 1];
+					stationNames[y + 1] = temp;
 				}
 
+		// put the names in both ComboBox'es
 		departureComboBox = new JComboBox<String>(stationNames);
 		departureComboBox.setBackground(Color.white);
 		destinationComboBox = new JComboBox<String>(stationNames);
@@ -152,30 +163,35 @@ public class UserScreen extends JFrame implements ActionListener {
 		stationPanel.add(departureComboBox);
 		stationPanel.add(destinationLabel);
 		stationPanel.add(destinationComboBox);
+		// add actionListeners to comboBox'es
 		departureComboBox.addActionListener(this);
 		destinationComboBox.addActionListener(this);
 	}
 
+	// routePanel
 	public void routePanel() {
 		saveRouteButton.addActionListener(this);
 		removeRouteButton.addActionListener(this);
 		showRouteButton.addActionListener(this);
+
 		routePanel.add(saveRouteButton);
 		routePanel.add(removeRouteButton);
 		routePanel.add(showRouteButton);
 	}
 
+	// removePanel
 	public void removePanel() {
-		removePanel.add(removeButton);
 		removeButton.addActionListener(this);
-		removePanel.add(backButton);
 		backButton.addActionListener(this);
+
+		removePanel.add(removeButton);
+		removePanel.add(backButton);
 	}
-	
+
+	// timePanel, with some preset start times
 	public void timePanel() {
-		String[] timeStrings = { "7:00am", "7:30am", "8:00am", "8:30am", "9:00am",
-				"9:30am", "10:00am", "10:30am", "11:00am", "11:30am", "12:00pm",
-				"12:30pm", "1:00pm", "1:30pm", "2:00pm", "2:30pm", "3:00pm"};
+		String[] timeStrings = { "7:00am", "7:30am", "8:00am", "8:30am", "9:00am", "9:30am", "10:00am", "10:30am",
+				"11:00am", "11:30am", "12:00pm", "12:30pm", "1:00pm", "1:30pm", "2:00pm", "2:30pm", "3:00pm" };
 		timeComboBox = new JComboBox(timeStrings);
 		timeComboBox.addActionListener(this);
 		timeButton.addActionListener(this);
@@ -183,6 +199,7 @@ public class UserScreen extends JFrame implements ActionListener {
 		timePanel.add(timeButton);
 	}
 
+	// rightPanel - contains Map
 	public void rightPanel() {
 		rightPanel.setLayout(new BorderLayout());
 		addScrollPane(rightPanel, map, "" + gos.getFileName() + "");
@@ -205,7 +222,7 @@ public class UserScreen extends JFrame implements ActionListener {
 		JOptionPane.showMessageDialog(this, message, title, messageType);
 	}
 
-	Station departureStation = null, destinationStation = null;
+	private Station departureStation = null, destinationStation = null;
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -213,25 +230,29 @@ public class UserScreen extends JFrame implements ActionListener {
 		if (e.getSource() == removeButton) {
 			String id = JOptionPane.showInputDialog(this, "Please verify in ID");
 			String name = JOptionPane.showInputDialog(this, "Please verify in Name");
+
 			try {
 				int actualId = Integer.parseInt(id);
+
+				// check id and name to match with current passenger
 				if (passenger.getId() == actualId && passenger.getName().equalsIgnoreCase(name)) {
 					int option = JOptionPane.showConfirmDialog(this, "Are you sure you want to remove\n"
 							+ "Passenger[ID:" + passenger.getId() + ", Name:" + passenger.getName() + "]?");
+					// show confirmation dialog do deleted passenger or not
 					if (option == JOptionPane.OK_OPTION) {
 						gos.removePassenger(passenger.getId(), passenger.getName());
 						outputMessage(
 								"Passenger[ID:" + passenger.getId() + ", Name:" + passenger.getName()
 										+ "] has been deleted.\n" + "Returning to mainscreen.",
 								"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
-						new BusPlannerGUI(gos, gos.getPassengers());
+
+						new BusPlannerGUI(gos, gos.getPassengers()); // go back to mainscreen
 						this.dispose();
 					}
 				}
-			} catch (NumberFormatException exception) {
+			} catch (NumberFormatException exception) { // invalid ID was entered
 				outputMessage("The information is incorrect!", "Error Message", JOptionPane.ERROR_MESSAGE);
 			}
-			// JOptionPane "Please confirm ID and Name to remove.
 		}
 		if (e.getSource() == backButton) {
 			new BusPlannerGUI(gos, gos.getPassengers());
@@ -246,31 +267,38 @@ public class UserScreen extends JFrame implements ActionListener {
 			destinationStation = gos.getStationByName(selectedStation);
 		}
 		if (e.getSource() == saveRouteButton) {
+			// Makes sure the comboBoxs have something selected
 			if (departureStation == null && destinationStation == null)
 				outputMessage("Please select a route first!", "Error Message", JOptionPane.ERROR_MESSAGE);
 			else {
 				outputMessage(departureStation.getName() + " to " + destinationStation.getName() + " route saved!",
 						"Route Saved", JOptionPane.PLAIN_MESSAGE);
+				// save best route to Passenger
 				passenger.setRoute(gos.bestPath(departureStation.getStationId(), destinationStation.getStationId()));
-				gos.getPassengers().exportPassengers(gos.getFileName());
 				gos.saveGos(gos.getFileName());
+				map.updateMap(passenger.getRoute().copy(), true); // show route on MAap
 			}
 		}
 		if (e.getSource() == removeRouteButton) {
 			if (passenger.getRoute() != null) {
 				String startStation = passenger.getRoute().pop().getName();
 				String endStation = "";
-				while(!passenger.getRoute().isEmpty()) 
+
+				// pop route to get the last station
+				while (!passenger.getRoute().isEmpty())
 					endStation = passenger.getRoute().pop().getName();
-				outputMessage("Route " + startStation + " to " + endStation + " removed" , "Route Removed", JOptionPane.PLAIN_MESSAGE);
+				outputMessage("Route " + startStation + " to " + endStation + " removed", "Route Removed",
+						JOptionPane.PLAIN_MESSAGE);
+
+				// delete route, update passengers, and update Map
 				passenger.setRoute(null);
 				gos.getPassengers().exportPassengers(gos.getFileName());
+				map.removeMyRoute(); // update on Map
 			} else {
-				map.removeMyRoute();
 				outputMessage("Passenger has no route saved!", "Error Message", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-		if(e.getSource() == showRouteButton) {
+		if (e.getSource() == showRouteButton) {
 			if(passenger.getRoute()!=null) {
 				Route tempRoute = passenger.getRoute().copy();
 				Station s1 = tempRoute.pop();
@@ -286,10 +314,9 @@ public class UserScreen extends JFrame implements ActionListener {
 		if (e.getSource() == timeButton) {
 			int time = 420 + (30 * timeComboBox.getSelectedIndex());
 			passenger.setTime(time);
-			System.out.println(passenger.getTime());
 		}
 		if (departureStation != null && destinationStation != null) {
-			// draw route on GUI map
+			// draw best route on GUI map
 			map.updateMap(gos.bestPath(departureStation.getStationId(), destinationStation.getStationId()), false);
 		}
 

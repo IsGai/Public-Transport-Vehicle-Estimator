@@ -1,24 +1,25 @@
+/*
+ * Class description: Map is used in both admin and user screens
+ * userscreen does not have allowed any actionlisteners
+ * adminscreen can interact wiht the map
+ */
+
 package Interface;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -28,38 +29,49 @@ import planner.Route;
 import planner.Station;
 
 public class Map extends JPanel implements MouseListener, MouseMotionListener {
-	private Line lineTemp;
-	private Oval ovalTemp;
+	// ovals = masterList of all the ovals(Stations) that exist
+	// lines = mastetList of all the lines(Edges) that exist
 	private ArrayList<Oval> ovals = new ArrayList<Oval>();
 	private ArrayList<Line> lines = new ArrayList<Line>();
+
+	// Variables used when dragging and drawing routes on Map
 	private Oval routeStart;
 	private boolean drawingRoute = false;
+	// Variables used to check authenticity when drawing routes on Map
+	private Line lineTemp;
+	private Oval ovalTemp;
 
+	// Oval(Station) sizes, and route circle size
 	private static int STATION_DIAMETER = 25;
 	private static int ROUTE_START_DIAMETER = 15;
 
-	private GraphOfStations gos;
-	// test variables
+	// Variables used in drawing bestRoute on Map
 	private boolean drawBestRoute = false;
 	private ArrayList<Oval> routeOvals = new ArrayList<Oval>();
 	private ArrayList<Line> routeLines = new ArrayList<Line>();
+
+	// Variables used in drawing passenger myRoute on Map
 	private boolean drawMyRoute = false;
 	private ArrayList<Oval> routeMyOvals = new ArrayList<Oval>();
 	private ArrayList<Line> routeMyLines = new ArrayList<Line>();
-	//
+
+	// Used when hovering mouse over an oval
+	// and displaying the corresponding statation data from it
 	private boolean hoveringOval = false;
 	private Oval hoveredOval;
-	
-	private JSlider ts;
-	private int[][] pl;
+
+	// Miscellaneous Variables
+	private GraphOfStations gos;
+	private JSlider ts; // timeSlider
+	private int[][] pl; // passengerLocations
 
 	public Map(boolean restricted, GraphOfStations gos, JSlider timeSlider, int[][] passengerLocations) {
 		this.setBackground(Color.white);
 		this.setForeground(null);
-		this.gos = gos;
-		this.ts = timeSlider;
-		this.pl =  passengerLocations;
-		this.updateMap();
+		this.gos = gos; // passed from User/Admin screen
+		this.ts = timeSlider; // passed from AdminScreen
+		this.pl = passengerLocations; // passed from AdminScreen
+		this.updateMap(); // Draw data to map
 		this.setPreferredSize(new Dimension(1000, 1000));
 
 		// userScreen won't be able to edit
@@ -69,16 +81,30 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 
+	//Constantly draw whatever is in this method to Map
 	@Override
 	protected void paintComponent(Graphics g2) {
 		super.paintComponent(g2);
 		Graphics2D g = (Graphics2D) g2;
-
-		// Image icon = new ImageIcon("src/Data/Tamriel(1000x1000).jpg").getImage();
-		// JLabel matrixIcon = new JLabel();
-		// matrixIcon.setIcon(new ImageIcon(icon));
-		// g.drawImage(icon, 0, 0, null);
-
+		
+		drawOvalsAndLines(g);
+		if (drawingRoute) {// draws red circle
+			g.setColor(Color.red);
+			g.fillOval(routeStart.getX(), routeStart.getY(), routeStart.getD(), routeStart.getD());
+		}
+		if (drawBestRoute)
+			drawBestRoute(g);
+		if (drawMyRoute)
+			drawMyRoute(g);
+		
+		drawOvalNames(g);
+		if (hoveringOval)
+			showStationData(g);
+		
+		repaint();
+	}
+	
+	public void drawOvalsAndLines(Graphics2D g) {
 		g.setColor(Color.black);
 		for (Oval o : ovals) // constantly draws stations
 			if (o != null)
@@ -88,54 +114,41 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 				g.setStroke(new BasicStroke(5));
 				g.drawLine(l.getStart().x, l.getStart().y, l.getEnd().x, l.getEnd().y);
 			}
-		if (drawingRoute) {// draws red circle
-			g.setColor(Color.red);
-			g.fillOval(routeStart.getX(), routeStart.getY(), routeStart.getD(), routeStart.getD());
-		} else
-			g.setColor(Color.black);
-		if (drawBestRoute)
-			drawBestRoute(g);
-		if (drawMyRoute)
-			drawMyRoute(g);
-		for (Oval o : ovals) // constantly draws ovalNames
-			if (o != null) {
-				g.setColor(Color.blue);
-				g.setFont(new Font("Arial", Font.BOLD, 15));
-				g.drawString(o.getName(), o.getX(), o.getY());
-				g.setColor(Color.black);
-			}
-		if (hoveringOval)
-			showStationData(g);
-		// else this.setCursor(null);
-		repaint();
 	}
 
 	public void drawBestRoute(Graphics2D g) {
 		g.setColor(Color.green);
+		//draw all the bestRoute stations green
 		for (Oval ro : routeOvals) {
 			if (ro != null) {
 				g.fillOval(ro.getX(), ro.getY(), ro.getD(), ro.getD());
 			}
 		}
-		for (Line rl : routeLines) // constantly draw routes
+		//draw all the bestRoute edges green
+		for (Line rl : routeLines)
 			if (rl != null) {
 				g.setStroke(new BasicStroke(5));
 				g.drawLine(rl.getStart().x, rl.getStart().y, rl.getEnd().x, rl.getEnd().y);
 			}
-		g.setColor(Color.black);
+		g.setColor(Color.black); //change color back to black
 	}
 
 	public void drawMyRoute(Graphics2D g) {
 		g.setColor(Color.yellow);
-		boolean drawStart = true;
-		for(Oval o: routeMyOvals) {
-			if(o!=null) {
-				if(drawStart) {
+		boolean drawStart = true; //distincts the starting station
+		Oval endOval = null;
+		for (Oval o : routeMyOvals) {
+			if (o != null) {
+				if (drawStart) {
 					g.fillOval(o.getX(), o.getY(), o.getD(), o.getD());
 					drawStart = false;
 				}
+				endOval = o;
 			}
 		}
+		//draw ending station
+		g.drawOval(endOval.getX(), endOval.getY(), endOval.getD(), endOval.getD());
+		
 		for (Line rl : routeMyLines) // constantly draw routes
 			if (rl != null) {
 				g.setStroke(new BasicStroke(3));
@@ -144,9 +157,20 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		g.setColor(Color.black);
 	}
 	
-	public int getPassengerCount(int id){
+	// constantly draws ovalNames
+	public void drawOvalNames(Graphics2D g) {
+		for (Oval o : ovals) 
+			if (o != null) {
+				g.setColor(Color.blue);
+				g.setFont(new Font("Arial", Font.BOLD, 15));
+				g.drawString(o.getName(), o.getX(), o.getY());
+				g.setColor(Color.black);
+			}
+	}
+
+	public int getPassengerCount(int id) {
 		int time = ts.getValue();
-		//System.out.println(id + " " + time + "|" + this.pl[id][time]);
+		// System.out.println(id + " " + time + "|" + this.pl[id][time]);
 		return this.pl[id][time];
 	}
 
@@ -162,17 +186,13 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		g.setFont(new Font("Arial", Font.PLAIN, 12));
 		Station temp = gos.getStationByPoint(hoveredOval.getPoint());
 		g.drawString("StationName: " + temp.getName(), x, y + 10);
-		//System.out.println("PSIZE: " + temp.getPassengers().size());
-		if(temp.getPassengers()!=null)
-		g.drawString("Passengers : " + getPassengerCount (temp.getStationId()) , x, y + 20);
 
-		// make cursor invisible, remember to make visible
-		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		// Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-		// cursorImg, new Point(0, 0), "blank cursor");
-		// this.setCursor(blankCursor);
+		if (temp.getPassengers() != null)
+			g.drawString("Passengers : " + getPassengerCount(temp.getStationId()), x, y + 20);
 	}
 
+	// Used when trying to draw routes on the Map
+	// makes sure that the user has dragged and moved to another oval
 	public boolean sameStation(Oval temp) {
 		if (ovalTemp == temp)
 			return true;
@@ -180,6 +200,15 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 			return false;
 	}
 
+	/**
+	 * Given a Point, returns an Oval if such an Oval exist with the similar Point
+	 * 
+	 * @precondition - clickedOnStation() should be called before this method is
+	 *               called
+	 * @param p
+	 *            - a point on the Mao
+	 * @return Oval - loops through ovals array to find oval with the matching Point
+	 */
 	public Oval getClickedStation(Point p) {
 		for (Oval o : ovals)
 			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax())
@@ -187,6 +216,13 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		return null;
 	}
 
+	/**
+	 * Checks that p is in the vicinity of an Oval in the Ovals ArrayList
+	 * 
+	 * @param p
+	 *            - the point clicked by the mouse
+	 * @return true if p is in the vicinity of existing Oval
+	 */
 	public boolean clickedOnStation(Point p) {
 		for (Oval o : ovals)
 			if (p.x >= o.getXMin() && p.x <= o.getXMax() && p.y >= o.getYMin() && p.y <= o.getYMax())
@@ -194,33 +230,39 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		return false;
 	}
 
+	// stops drawing passenger myRoute on Map
 	public void removeMyRoute() {
 		drawMyRoute = false;
 	}
 
 	// draw map given the GraphOfStation variables
 	public void updateMap() {
-		// add new stations to ovals
+		// Converts stations to ovals
 		ArrayList<Station> stationList = gos.getStationList();
 		ArrayList<Oval> newOvals = new ArrayList<Oval>();
 		for (int x = 0; x < stationList.size(); x++)
 			if (stationList.get(x) != null)
 				newOvals.add(new Oval(stationList.get(x).getVertexCoordinate(), STATION_DIAMETER,
 						stationList.get(x).getName(), true));
-		ovals = newOvals;
+		ovals = newOvals; // completely write over the old ovals
 
-		// add new edges to lines
+		// Convert edges to lines
 		ArrayList<String> stationEdges = gos.getStationEdges();
 		ArrayList<Line> newLines = new ArrayList<Line>();// newLines is used to get rid of duplicated drawn lines
 		for (int x = 0; x < stationEdges.size(); x++)
 			newLines.add(new Line(gos.getStationByName(stationEdges.get(x).split("asdflmfao")[0]).getVertexCoordinate(),
 					gos.getStationByName(stationEdges.get(x).split("asdflmfao")[1]).getVertexCoordinate()));
-		this.lines = newLines;
+		this.lines = newLines; // completely write over the old lines
 	}
 
-	// draw Passenger selected route
+	/**
+	 * 
+	 * @param route
+	 *            - can either be bestRoute from GOS, or myRoute from Passenger
+	 * @param myRoute
+	 *            - true is passed myRoute, false if passed bestRoute
+	 */
 	public void updateMap(Route route, boolean myRoute) {
-		// Clean this method up
 		Station temp = null;
 		if (myRoute) {
 			routeMyOvals = new ArrayList<Oval>();
@@ -263,8 +305,8 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 
 	/*
 	 * DOUBLE BUFFERING import java.awt.Graphics; import java.awt.Image;
-	 * paintComponent(Graphics g), paint(Graphics g) constantly copies gui image,in
-	 * order to replicate and reprint it
+	 * paintComponent(Graphics g), paint(Graphics g) constantly copies gui image,
+	 * inorder to replicate and reprint it constantly to Map
 	 */
 	private Image dbImage;
 	private Graphics dbg;
@@ -281,9 +323,12 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON3) {
 			Point mousePoint = e.getPoint(); // get mousePoint
-			// adjust mousePoint to shift up-left on Map
+
+			// adjust mousePoint to shift up-left on Map,
+			// so that the circle is center on the sharp point of the mouse
 			mousePoint.x = mousePoint.x - STATION_DIAMETER / 2;
 			mousePoint.y = mousePoint.y - STATION_DIAMETER / 2;
+			// makes sure it's not clicked on an existing station
 			if (!clickedOnStation(e.getPoint())) {
 				Oval tempOval = new Oval(mousePoint, STATION_DIAMETER, true);
 				ovals.add(tempOval);
@@ -291,9 +336,9 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 				if (stationName != null) {
 					tempOval.setName(stationName);
 					gos.addStation(new Station(stationName, tempOval.getPoint())); // update GraphOfStations
-					pl = gos.simulatePlacements();
+					pl = gos.simulatePlacements(); // update simulation
 				} else
-					ovals.remove(tempOval);
+					ovals.remove(tempOval); // remove station, because invalid station name
 			}
 		}
 	}
@@ -323,7 +368,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			drawingRoute = false; // stops drawing the red circle
 			Oval startOval = ovalTemp; // either an Oval or null
-			if (clickedOnStation(e.getPoint())) { // clciked on oval
+			if (clickedOnStation(e.getPoint())) { // clicked on oval
 				Oval endOval = getClickedStation(e.getPoint());// get which oval was clicked on
 				if (!sameStation(endOval)) { // make sure the user actually drew a route
 					if (lineTemp != null) { // if lineTemp==null then the first click was not on a station
@@ -337,6 +382,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 						if (gos.hasStationByPoint(endOval.getPoint())) {
 							endStation = gos.getStationByPoint(endOval.getPoint());
 						}
+						// if all goes well, then add the edge to GOS, and to Map
 						if (startStation != null && endStation != null) {
 							gos.addEdge(startStation, endStation);
 							lineTemp.setEnd(e.getPoint());
@@ -348,6 +394,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 
+	// Hovering over an oval displays some of its information on Map
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		Point cursor = e.getPoint();
@@ -360,19 +407,22 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-
+		// not used
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+		// not used
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
+		// not used
 	}
 
 	// Visual Graphic Classes, oval = stations, line = edges/routes
-	private class Oval { // stations
+	//
+	private class Oval { // represents stations
 		private int x, y;
 		private int d;
 		private String name;
@@ -439,6 +489,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 
+	// represents the edges from GOS
 	private class Line { // individual route
 		private Point start;
 		private Point end;
@@ -465,8 +516,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 			this.start = start;
 		}
 
-		// fixed: routes shifting to bottom right
-		// was referencing Station.coordinates
+		// sets startPoint, and adjusts it to be centered in the oval
 		public void setStartWithUpdate(Point start) {
 			Point newStart = new Point(start);
 			newStart.x += STATION_DIAMETER / 2;
@@ -478,6 +528,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
 			this.end = end;
 		}
 
+		// sets endPoint, and adjusts it to be centered in the oval
 		public void setEndWithUpdate(Point end) {
 			Point newEnd = new Point(end);
 			newEnd.x += STATION_DIAMETER / 2;

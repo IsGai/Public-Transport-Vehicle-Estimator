@@ -1,14 +1,14 @@
+/*
+ * Class description: MainScreen, contains main(). Redirects to User/Admin screens
+ */
+
 package Interface;
 
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -27,16 +27,16 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		new BusPlannerGUI();
 	}
 
-	//GUI LoginScreen size
+	// GUI LoginScreen size
 	private static int LOGINSCREEN_WIDTH = 500;
 	private static int LOGINSCREEN_HEIGHT = 500;
-	
+
 	// LoginScreen Components
 	private JPanel buttonsPanel = new JPanel();
 	private JButton userButton = new JButton("Passenger");
 	private JButton adminButton = new JButton("Admin");
 
-	//User Login Screen
+	// User Login Screen
 	private JPanel userPanel = new JPanel();
 	private JPanel idPanel = new JPanel();
 	private JLabel idLabel = new JLabel("ID: ");
@@ -45,7 +45,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	private JLabel nameLabel = new JLabel("Name: ");
 	private JTextField nameTextField = new JTextField(20);
 
-	//Admin Login Screen
+	// Admin Login Screen
 	private JPanel adminPanel = new JPanel();
 	private JPanel usernamePanel = new JPanel();
 	private JLabel usernameLabel = new JLabel("Username: ");
@@ -54,7 +54,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 	private JLabel passwordLabel = new JLabel("Password: ");
 	private JTextField passwordTextField = new JTextField(20);
 
-	//Part of User Login Screen
+	// Part of User Login Screen
 	private JPanel loginPanel = new JPanel();
 	private JButton loginButton = new JButton("Login");
 	private JButton addUserButton = new JButton("New User");
@@ -68,24 +68,24 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		gos = new GraphOfStations(); // default
 		busPlannerGUI();
 	}
-	
-	//When loaded MAP and PASSENGERS
+
+	// When loaded MAP and PASSENGERS
 	public BusPlannerGUI(GraphOfStations gos, Passengers<Passenger> passengers) {
 		this.gos = gos;
 		gos.setPassengers(passengers);
 		busPlannerGUI();
 	}
 
-	//GUI setup
+	// GUI setup
 	public void busPlannerGUI() {
 		this.setTitle("Bus Planner");
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
-		//GUI Sizing and Locationing
+		// GUI Sizing and Locationing
 		this.setSize(LOGINSCREEN_WIDTH, LOGINSCREEN_HEIGHT);
 		this.setLocationRelativeTo(null);
 
-		//GUI setup and intialization
+		// GUI setup and intialization
 		panelSetups();
 		GUIComponents();
 		addComponents();
@@ -96,7 +96,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	//Setup all of the panels
+	// Setup all of the panels
 	public void panelSetups() {
 		buttonsPanel.add(userButton);
 		buttonsPanel.add(adminButton);
@@ -105,7 +105,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		loginPanelSetup();
 	}
 
-	//User Login Screen Setup
+	// User Login Screen Setup
 	public void userPanelSetup() {
 		idPanel.add(idLabel);
 		idPanel.add(idTextField);
@@ -114,7 +114,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		panelSetup(userPanel, idPanel, namePanel);
 	}
 
-	//Admin Login Screen Setup
+	// Admin Login Screen Setup
 	public void adminPanelSetup() {
 		usernamePanel.add(usernameLabel);
 		usernamePanel.add(usernameTextField);
@@ -125,9 +125,13 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 	/**
 	 * Used to setup both User/Admin Login Screens
-	 * @param panel - the User/Admin panel
-	 * @param panel1 - first panel to add
-	 * @param panel2 - second panel to add
+	 * 
+	 * @param panel
+	 *            - the User/Admin panel
+	 * @param panel1
+	 *            - first panel to add
+	 * @param panel2
+	 *            - second panel to add
 	 */
 	public void panelSetup(JPanel panel, JPanel panel1, JPanel panel2) {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -135,14 +139,14 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		panel.add(panel2);
 	}
 
-	//User Login Screen
+	// User Login Screen
 	public void loginPanelSetup() {
 		loginPanel.add(loginButton);
 		loginPanel.add(addUserButton);
 		loginPanel.add(remUserButton);
 	}
 
-	//default settings, and setting action listeners for components
+	// default settings, and setting action listeners for components
 	public void GUIComponents() {
 		userButton.setEnabled(false);
 		userButton.addActionListener(this);
@@ -152,7 +156,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		remUserButton.addActionListener(this);
 	}
 
-	//Adds the three major panels to the GUI
+	// Adds the three major panels to the GUI
 	public void addComponents() {
 		this.add(buttonsPanel);
 		this.add(userPanel);
@@ -161,13 +165,15 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 	/**
 	 * Swtiches between User/Admin login screens
-	 * @param screen - the screen to switch to (User/Admin)
+	 * 
+	 * @param screen
+	 *            - the screen to switch to (User/Admin)
 	 */
 	public void changeScreenTo(JPanel screen, boolean goingToAdminScreen) {
 		this.getContentPane().removeAll();
 		this.repaint();
 		this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
-		
+
 		adminButton.setEnabled(goingToAdminScreen);
 		userButton.setEnabled(!goingToAdminScreen);
 		addUserButton.setVisible(goingToAdminScreen);
@@ -182,6 +188,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 	/**
 	 * Validate that username/password matche those in the Admin.dat
+	 * 
 	 * @return true - if Admin.dat username/passwords match what's on the textFields
 	 */
 	public boolean validateAdmin() {
@@ -197,7 +204,8 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 
 	/**
 	 * 
-	 * @param filePath - relative path to Admin.data
+	 * @param filePath
+	 *            - relative path to Admin.data
 	 * @return String[0] = username, String[1] = password
 	 */
 	public String[] readAdmin(String filePath) {
@@ -219,11 +227,15 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		return new String[] { username, password };
 	}
 
-	//JOptionPane popup message dialogue
+	// JOptionPane popup message dialogue
 	public void outputMessage(String message, String title, int messageType) {
 		JOptionPane.showMessageDialog(this, message, title, messageType);
 	}
 
+	/**
+	 * Performs all of the functions for components with ActionListeners Each
+	 * component actions are separated by if statements
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JButton temp = (JButton) e.getSource();
@@ -235,13 +247,14 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 		}
 		if (temp == addUserButton) {
 			String name = JOptionPane.showInputDialog("Enter in your name.");
-			//Triple checks that something was entered
-			if (name!=null && name.trim().length() > 0 && name.length() > 0) {
-				Passenger p = new Passenger(name); //create the passenger, generated ID
-				gos.addPassenger(p); //adds passenger via GraphOfStations, automatically exports to appropriate Passengers data file
+			// Triple checks that something was entered
+			if (name != null && name.trim().length() > 0 && name.length() > 0) {
+				Passenger p = new Passenger(name); // create the passenger, generated ID
+				gos.addPassenger(p); // adds passenger via GraphOfStations, automatically exports to appropriate
+										// Passengers data file
 				outputMessage("New passenger " + p.getName() + " was succesfully added.\n" + p.getName() + "'s ID is \""
 						+ p.getId() + "\"", "Passenger Added", JOptionPane.PLAIN_MESSAGE);
-			}else {
+			} else {
 				outputMessage("You did not enter in anything", "Error Message", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -249,7 +262,7 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 			String id = JOptionPane.showInputDialog("Verify ID.");
 			String name = JOptionPane.showInputDialog("Verify name.");
 			try {
-				//display successful removal message if such a passenger exist
+				// display successful removal message if such a passenger exist
 				if (gos.removePassenger(Integer.parseInt(id), name)) {
 					outputMessage("Passenger[ID:" + id + ", Name:" + name + "] was successfully removed",
 							"Passenger Removed", JOptionPane.PLAIN_MESSAGE);
@@ -272,16 +285,16 @@ public class BusPlannerGUI extends JFrame implements ActionListener {
 					id = Integer.parseInt(idTextField.getText());
 					Passenger currentPassenger = gos.getPassengers().getPassenger(id, name); // search for passenger
 					if (currentPassenger != null) {
-						//Passenger is found, go to userScreen
+						// Passenger is found, go to userScreen
 						new UserScreen(currentPassenger, gos);
 						this.dispose();
 					} else {
-						//Passenger not found, display error message
+						// Passenger not found, display error message
 						outputMessage("Could not find passenger with information.\nPassenger[ID:" + id + ", Name:"
 								+ name + "]", "Passenger Not Found", JOptionPane.PLAIN_MESSAGE);
 					}
 				} catch (NumberFormatException nfe) {
-					//ID input was not in number format
+					// ID input was not in number format
 					outputMessage("Make sure ID textfield is only numbers.\nie: \"1000\".", "Invalid ID Format",
 							JOptionPane.ERROR_MESSAGE);
 				}

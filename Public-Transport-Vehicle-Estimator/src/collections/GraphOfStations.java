@@ -77,15 +77,6 @@ public class GraphOfStations implements Serializable {
 	 * Postcondition: The graph will be extended to contain the new station.
 	 */
 	public void addStation(Station stationToAdd) {
-		// Loop to add column to other stations.
-		// System.out.println(stationCount);
-		/*
-		 * for (int i = 0; i <= stationCount; i++) { // adds 0.0 to every station, for
-		 * when every new station is created for(int
-		 * j=adjacencyList.get(i).size();j<=stationCount;j++) {
-		 * adjacencyList.get(i).add(0.0); stationEdges.get(i).add(null); } }
-		 */
-
 		// Increment station count.
 		stationCount++;
 		adjacencyList.add(new AdjacencyList<Double>(stationCount));
@@ -105,7 +96,6 @@ public class GraphOfStations implements Serializable {
 
 		// Add station to station list.
 		stationList.add(stationToAdd);
-		// System.out.println("addStation(): " + stationToAdd.getVertexCoordinate());
 	}
 
 	/*
@@ -287,7 +277,11 @@ public class GraphOfStations implements Serializable {
 	}
 
 
-	// William's defined methods
+	/**
+	 * Determine if a station with stationName exists in stationList
+	 * @param stationName - name of station to be searched
+	 * @return true if found first station with same name
+	 */
 	public boolean hasStationByName(String stationName) {
 		for (Station s : stationList)
 			if (s != null)
@@ -296,6 +290,12 @@ public class GraphOfStations implements Serializable {
 		return false;
 	}
 
+	/**
+	 * Returns a station, given the stationName
+	 * @precondition should do hasStationByName before calling thie method
+	 * @param stationName
+	 * @return the first Station from stationList with stationName
+	 */
 	public Station getStationByName(String stationName) {
 		for (Station s : stationList)
 			if (s != null)
@@ -303,19 +303,12 @@ public class GraphOfStations implements Serializable {
 					return s;
 		return null;
 	}
-
-	public void removeStation(Station station) { // not yet implemented
-		stationList.remove(station); // might have issues with how stationID is implemented and used
-	}
-
-	public ArrayList<Station> getStationList() {
-		return this.stationList;
-	}
-
-	public ArrayList<String> getStationEdges() {
-		return this.stationEdges;
-	}
-
+	
+	/**
+	 * Determines if a station exist in stationList with given point
+	 * @param point - point of a station
+	 * @return true or false
+	 */
 	public boolean hasStationByPoint(Point point) {
 		for (Station s : stationList)
 			if (s != null)
@@ -324,6 +317,11 @@ public class GraphOfStations implements Serializable {
 		return false;
 	}
 
+	/**
+	 * Returns a station, given the point passed
+	 * @param point - point of a station
+	 * @return the first Station in stationList, with the same point
+	 */
 	public Station getStationByPoint(Point point) {
 		for (Station s : stationList)
 			if (s != null)
@@ -332,6 +330,17 @@ public class GraphOfStations implements Serializable {
 		return null;
 	}
 
+	//return stationList
+	public ArrayList<Station> getStationList() {
+		return this.stationList;
+	}
+
+	//return stationEdges
+	public ArrayList<String> getStationEdges() {
+		return this.stationEdges;
+	}
+
+	//Writes to "".map file, and export Passengers to "".pas file
 	public void saveGos(String fileName) {
 		try {
 			ObjectOutputStream outputStream = new ObjectOutputStream(
@@ -342,12 +351,18 @@ public class GraphOfStations implements Serializable {
 			outputStream.writeObject(stationEdges);
 			outputStream.close();
 			passengers.exportPassengers(fileName);
-			this.fileName = fileName;
+			
+			this.fileName = fileName; //set the current fileName
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Loads data from "".map file, throws exception to any error
+	 * @param filePath - path to the "".map file
+	 * @return true if everything is loaded properly
+	 */
 	public boolean loadGOS(String filePath) {// has to be changed according to data structures
 		boolean loaded = false;
 		try {
@@ -359,7 +374,6 @@ public class GraphOfStations implements Serializable {
 				this.stationEdges = (StationEdges<String>) inputStream.readObject();
 				inputStream.close();
 				this.fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length() - 4);
-				// System.out.println(fileName);
 				loaded = true;
 			} catch (Exception e) {
 				loaded = false;
@@ -371,6 +385,7 @@ public class GraphOfStations implements Serializable {
 		return loaded;
 	}
 
+	//puts all instance variables to (0)
 	public void clearGOS() {
 		this.adjacencyList = new AdjacencyList<ArrayList<Double>>();
 		this.stationList = new StationList<Station>();
@@ -379,22 +394,27 @@ public class GraphOfStations implements Serializable {
 		this.passengers = new Passengers<Passenger>();
 	}
 
+	//return passengers
 	public Passengers<Passenger> getPassengers() {
 		return this.passengers;
 	}
 
+	//sets passengers, used when loading "".map files
 	public void setPassengers(Passengers<Passenger> passengers) {
 		this.passengers = passengers;
 	}
 
+	//sets the instance variable fileName
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
+	//returns fileName
 	public String getFileName() {
 		return this.fileName;
 	}
 
+	//adds passenger to passengers, and saves to "".pas file
 	public void addPassenger(Passenger p) {
 		this.getPassengers().add(p);
 		this.getPassengers().exportPassengers(fileName);
