@@ -106,6 +106,13 @@ public class AdminScreen extends JFrame implements ActionListener, ChangeListene
 	public void initialSetup(GraphOfStations gos) {
 		this.gos = gos;
 		passengerLocations = gos.simulatePlacements();
+		/*
+		for(int i=0;i<passengerLocations.length;i++) {
+			for(int x=0;x<passengerLocations[0].length;x++) {
+				System.out.print(passengerLocations[i][x] + " ");
+			}
+			System.out.println();
+		}*/
 		map = new Map(false, gos, timeSlider, passengerLocations);
 	}
 
@@ -470,7 +477,10 @@ public class AdminScreen extends JFrame implements ActionListener, ChangeListene
 		if(e.getSource() == timeSlider) {
 			//display current time, and current passengers on buses
 			setTime(timeSlider.getValue());
-			setPeopleOnBuses(passengerLocations[gos.getPassengers().size()+1][timeSlider.getValue()]);
+			//System.out.println(gos.getPassengers().size() + ", " + timeSlider.getValue());
+			//System.out.println(passengerLocations[gos.getPassengers().size()+1][timeSlider.getValue()]);
+			//System.out.println(gos.getPassengers().size() + " " + passengerLocations.length);
+			setPeopleOnBuses(passengerLocations[passengerLocations.length-1][timeSlider.getValue()]);
 		}
 	}
 }
